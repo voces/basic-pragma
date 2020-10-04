@@ -1,0 +1,7 @@
+{
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		// Remove jest/node
+		"types": ["lua-types/5.3"]
+	}
+}

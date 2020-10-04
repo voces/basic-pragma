@@ -1,29 +1,22 @@
 {
-  "compilerOptions": {
-    /* Visit https://aka.ms/tsconfig.json to read more about this file */
-    "target": "ESNext",
-    "module": "commonjs",
-    "lib": [
-      "ESNext",
-      "DOM"
-    ],
-    "jsx": "react",
-    "jsxFactory": "createElement",
-    "declaration": true,
-    "strict": true,
-    "rootDir": "./src/",
-    "outDir": "./dist/",
-    "moduleResolution": "node",
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "typeRoots": [
-      "node_modules/@wartoshika/wow-declarations",
-      "node_modules/lua-types/5.1",
-      "node_modules/@types"
-    ],
-    "types": [
-      "lua-types/5.1",
-      "@wartoshika/wow-declarations"
-    ]
-  }
+	"compilerOptions": {
+		"alwaysStrict": true,
+		"declaration": true,
+		"forceConsistentCasingInFileNames": true,
+		"jsx": "react",
+		"jsxFactory": "createElement",
+		"lib": ["ESNext", "DOM"],
+		"module": "commonjs",
+		"moduleResolution": "node",
+		"noImplicitAny": true,
+		"noImplicitThis": true,
+		"outDir": "./dist/",
+		"skipLibCheck": true,
+		"strictNullChecks": true,
+		"target": "ESNext",
+		"typeRoots": ["lua-types/5.3"],
+		"types": ["@types/jest", "@types/node", "lua-types/5.3"]
+	},
+	"include": ["src"],
+	"exclude": ["node_modules", "**/*.test.ts"]
 }

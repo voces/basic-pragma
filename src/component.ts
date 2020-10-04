@@ -1,28 +1,30 @@
-import { InternalElement } from './element';
-import { Instance, reconcile } from './reconciler';
+import { adapter } from "./adapter";
+import { VNode } from "./element";
+import { Instance, reconcile } from "./reconciler";
 
-export class Component<P = {}, S = {}> {
-  public state: S = {} as any;
-  constructor(public props: P = {} as any) { }
+export abstract class ClassComponent<P, S = unknown, T = unknown> {
+	state: S = {} as S;
+	constructor(public props: P = {} as P) {}
 
-  private __internalInstance!: Instance;
+	private __internalInstance!: Instance<T, P>;
 
-  setState(partialState: Partial<S>) {
-    this.state = { ...this.state, ...partialState };
-    updateInstance(this.__internalInstance);
-  }
+	setState(partialState: Partial<S>): void {
+		this.state = { ...this.state, ...partialState };
+		updateInstance(this.__internalInstance);
+	}
 
-  render(): InternalElement | null {
-    throw 'render not implemented';
-  }
+	abstract render(props: P): VNode<P> | null;
 }
 
-function updateInstance(internalInstance: Instance) {
-  const parentDom = internalInstance.hostFrame.GetParent() as WoWAPI.Frame;
-  const element = internalInstance.element;
-  if (parentDom) {
-    reconcile(parentDom, internalInstance, element);
-  } else {
-    throw 'Tried to reconcile instance with no dom.parentDom';
-  }
+export type FunctionalComponent<P> = (props: P) => VNode<P> | null;
+
+export type ComponentType<P> =
+	| (new (props: P) => ClassComponent<P>)
+	| FunctionalComponent<P>;
+
+function updateInstance<T>(internalInstance: Instance<T, unknown>) {
+	const parentDom = adapter.getParent(internalInstance.hostFrame);
+	const vnode = internalInstance.vnode;
+	if (parentDom) reconcile(parentDom, internalInstance, vnode);
+	else throw "Tried to reconcile instance with no dom.parentDom";
 }
