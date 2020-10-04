@@ -1,21 +1,24 @@
 {
-	"name": "basic-vdom",
+	"name": "basic-pragma",
 	"version": "1.0.0",
-	"description": "Configurable vdom",
+	"description": "Configurable JSX pragma using a basic vdom",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "tsc --project tsconfig.build.json",
 		"prepublishOnly": "npm run build",
+		"test-lint": "eslint src --ext .js,.ts,.jsx,.tsx",
 		"test": "jest"
 	},
 	"repository": {
 		"type": "git",
-		"url": "github:voces/basic-vdom"
+		"url": "github:voces/basic-pragma"
 	},
 	"keywords": [
 		"dom",
 		"jsx",
+		"pragma",
+		"preact",
 		"React",
 		"ts",
 		"tstl",
