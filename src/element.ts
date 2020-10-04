@@ -8,14 +8,13 @@ export interface VNode<P> {
 	key?: string | number;
 }
 
-export type RawChild = VNode<unknown> | string | boolean | null | undefined;
+type RawChild = VNode<unknown> | string | boolean | null | undefined;
 
-export type RenderableChildElement = VNode<unknown> | string;
+type RenderableChildElement = VNode<unknown> | string;
 
 export const TEXT_ELEMENT = "TEXT ELEMENT";
 
 const EMPTY_OBJECT = {};
-
 export type EmptyObject = typeof EMPTY_OBJECT;
 
 export function createElement<P>(

@@ -1,6 +1,8 @@
-import { Component } from ".";
 import { Adapter, adapter } from "./adapter";
-import { ClassComponent, FunctionalComponent } from "./Component";
+import {
+	ClassComponent,
+	FunctionalComponent as FunctionalComponentType,
+} from "./Component";
 import { TEXT_ELEMENT, VNode } from "./element";
 
 export interface Instance<T, P> {
@@ -14,10 +16,7 @@ export interface Instance<T, P> {
 
 let rootInstance: Instance<unknown, unknown> | null = null;
 
-export function render<T, P extends Record<string, unknown>>(
-	vnode: VNode<P>,
-	container: T,
-): void {
+export function render<T, P>(vnode: VNode<P>, container: T): void {
 	const prevInstance = rootInstance;
 	const nextInstance = reconcile(container, prevInstance, vnode);
 	rootInstance = nextInstance;
@@ -25,7 +24,7 @@ export function render<T, P extends Record<string, unknown>>(
 
 export function reconcile<T, VNodeProps, InstanceProps>(
 	parentFrame: T,
-	instance: Instance<T, InstanceProps> | null,
+	instance: Instance<T, InstanceProps> | null | undefined,
 	vnode: VNode<VNodeProps> | null,
 ): Instance<T, VNodeProps>;
 export function reconcile<T, VNodeProps>(
@@ -170,28 +169,43 @@ function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
 	}
 }
 
-function createPublicInstance<T, P>(
+function createPublicInstance<T, S, P>(
 	vnode: VNode<P>,
 	internalInstance: Instance<T, P>,
-): Component<P, unknown, T> {
+): ClassComponent<P, S, T> {
 	const { type: ComponentType, props } = vnode;
 
+	let constructor;
 	if (typeof ComponentType === "string")
 		throw "Tried createPublicInstance() with string";
+	else if (ComponentType.prototype && "render" in ComponentType.prototype)
+		constructor = ComponentType as new (props: P) => ClassComponent<
+			P,
+			S,
+			T
+		>;
+	else {
+		const renderFunc = ComponentType as FunctionalComponentType<P>;
+		// Wrap the dynamic class in an object to avoid all functional
+		// components being ClassComponent
+		constructor = {
+			[renderFunc.name]: class extends ClassComponent<P, S, T> {
+				displayName = renderFunc.name;
+				constructor(props: P) {
+					super(props);
 
-	const constructor =
-		ComponentType.prototype && "render" in ComponentType.prototype
-			? // eslint-disable-next-line @typescript-eslint/no-explicit-any
-			  ((ComponentType as any) as new (props: P) => Component<
-					P,
-					unknown,
-					T
-			  >)
-			: class FComponent extends Component<P, unknown, T> {
-					render(props: P) {
-						return (ComponentType as FunctionalComponent<P>)(props);
-					}
-			  };
+					// Hide displayName from diffs, which is just noisy
+					Object.defineProperty(this, "displayName", {
+						value: renderFunc,
+						enumerable: false,
+					});
+				}
+				render(props: P) {
+					return renderFunc(props);
+				}
+			},
+		}[renderFunc.name];
+	}
 
 	const publicInstance = new constructor(props);
 

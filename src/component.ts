@@ -3,14 +3,14 @@ import { VNode } from "./element";
 import { Instance, reconcile } from "./reconciler";
 
 export abstract class ClassComponent<P, S = unknown, T = unknown> {
-	state: S = {} as S;
-	constructor(public props: P = {} as P) {}
+	state = {} as S;
+	private __internalInstance: Instance<T, P> | undefined;
 
-	private __internalInstance!: Instance<T, P>;
+	constructor(public props: P) {}
 
 	setState(partialState: Partial<S>): void {
 		this.state = { ...this.state, ...partialState };
-		updateInstance(this.__internalInstance);
+		if (this.__internalInstance) updateInstance(this.__internalInstance);
 	}
 
 	abstract render(props: P): VNode<P> | null;

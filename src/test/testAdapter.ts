@@ -11,7 +11,6 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 	constructor(props?: EmptyObject, parent?: TestFrame, jsxType?: string);
 	constructor(props: P, parent?: TestFrame, jsxType?: string);
 	constructor(props?: P, parent?: TestFrame, jsxType?: string) {
-		//
 		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		this.props = props ?? (({} as any) as P);
 		this.jsxType = jsxType;
@@ -33,19 +32,6 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 		this.disposed = true;
 		for (const child of this.children) child.dispose();
 	}
-
-	// We use setters and getters so we can mock them
-	setProp<Prop extends keyof P>(prop: Prop, value: P[Prop]): void {
-		this.props[prop] = value;
-	}
-
-	getProp(prop: string): unknown {
-		return this.props[prop];
-	}
-
-	clearProp(prop: string): void {
-		delete this.props[prop];
-	}
 }
 
 export const testAdapter = {
@@ -66,12 +52,12 @@ export const testAdapter = {
 	): void => {
 		// Clear removed props
 		for (const prop in prevProps)
-			if (!(prop in nextProps)) frame.clearProp(prop);
+			if (!(prop in nextProps)) delete frame.props[prop];
 
 		// Add new props
 		for (const prop in nextProps)
 			if (nextProps[prop] !== prevProps[prop])
-				frame.setProp(prop, nextProps[prop]);
+				frame.props[prop] = nextProps[prop];
 	},
 
 	getParent: <P extends Record<string, unknown>>(

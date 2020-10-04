@@ -4,9 +4,7 @@ import { createElement } from "./element";
 import { reconcile, render } from "./reconciler";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
-beforeEach(() => {
-	setAdapter(testAdapter);
-});
+setAdapter(testAdapter);
 
 describe("reconcile", () => {
 	describe("creating an instance", () => {
