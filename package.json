@@ -1,7 +1,7 @@
 {
-	"name": "basic-jsx",
+	"name": "basic-vdom",
 	"version": "1.0.0",
-	"description": "Configurable JSX & vdom",
+	"description": "Configurable vdom",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
@@ -11,7 +11,7 @@
 	},
 	"repository": {
 		"type": "git",
-		"url": "github:Brusalk/react-wow-addon"
+		"url": "github:voces/basic-vdom"
 	},
 	"keywords": [
 		"dom",
@@ -33,18 +33,19 @@
 		"@types/jest": "^26.0.14",
 		"@typescript-eslint/eslint-plugin": "^4.3.0",
 		"enzyme": "^3.11.0",
-		"eslint": "^7.10.0",
 		"eslint-config-verit": "^3.2.1",
 		"eslint-plugin-prettier": "^3.1.4",
+		"eslint": "^7.10.0",
 		"jest": "^26.4.2",
 		"lua-types": "^2.8.0",
 		"prettier": "^2.1.2",
 		"ts-jest": "^26.4.1",
+		"typescript": "^3.9.7",
 		"w3api": "^2.2.0",
 		"w3ts": "^2.1.2",
 		"war3-types": "^1.0.2"
 	},
-	"dependencies": {
+	"peerDependencies": {
 		"typescript": "^3.9.7",
 		"typescript-to-lua": "^0.35.0"
 	},
