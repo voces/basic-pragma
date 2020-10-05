@@ -2,6 +2,8 @@
 	"name": "basic-pragma",
 	"version": "1.0.0",
 	"description": "Configurable JSX pragma using a basic vdom",
+	"author": "verit",
+	"license": "MIT",
 	"main": "./dist/index.js",
 	"types": "./dist/index.d.ts",
 	"scripts": {
@@ -9,10 +11,6 @@
 		"prepublishOnly": "npm run build",
 		"test-lint": "eslint src --ext .js,.ts,.jsx,.tsx",
 		"test": "jest"
-	},
-	"repository": {
-		"type": "git",
-		"url": "github:voces/basic-pragma"
 	},
 	"keywords": [
 		"dom",
@@ -27,8 +25,10 @@
 		"typescript",
 		"ui"
 	],
-	"author": "verit",
-	"license": "MIT",
+	"peerDependencies": {
+		"typescript": "^3.9.7",
+		"typescript-to-lua": "^0.35.0"
+	},
 	"devDependencies": {
 		"@babel/preset-env": "^7.11.5",
 		"@babel/preset-typescript": "^7.10.4",
@@ -48,12 +48,6 @@
 		"w3ts": "^2.1.2",
 		"war3-types": "^1.0.2"
 	},
-	"peerDependencies": {
-		"typescript": "^3.9.7",
-		"typescript-to-lua": "^0.35.0"
-	},
-	"files": [
-		"dist/",
-		"@types"
-	]
+	"files": [ "dist/" ],
+	"repository": { "type": "git", "url": "github:voces/basic-pragma" }
 }

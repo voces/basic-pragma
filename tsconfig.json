@@ -14,8 +14,7 @@
 		"skipLibCheck": true,
 		"strictNullChecks": true,
 		"target": "ESNext",
-		"typeRoots": ["lua-types/5.3"],
-		"types": ["@types/jest", "@types/node", "lua-types/5.3"]
+		"types": ["@types/jest", "@types/node"]
 	},
 	"include": ["src"],
 	"exclude": ["node_modules"]
