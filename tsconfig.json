@@ -3,8 +3,6 @@
 		"alwaysStrict": true,
 		"declaration": true,
 		"forceConsistentCasingInFileNames": true,
-		"jsx": "react",
-		"jsxFactory": "createElement",
 		"lib": ["ESNext", "DOM"],
 		"module": "commonjs",
 		"moduleResolution": "node",

@@ -5,6 +5,13 @@ import {
 } from "./Component";
 import { TEXT_ELEMENT, VNode } from "./element";
 
+export const hooks = {
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars
+	beforeRender: (instance: ClassComponent<unknown>): void => {
+		/* do nothing */
+	},
+};
+
 export interface Instance<T, P> {
 	// FunctionComponents are dynamically converted into ClassComponents
 	publicInstance?: ClassComponent<P> | undefined;
@@ -67,6 +74,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 		} else if (instanceOfSameType.publicInstance) {
 			// Update composite instance
 			instanceOfSameType.publicInstance.props = vnode.props;
+			hooks.beforeRender(instanceOfSameType.publicInstance);
 			const childElement = instanceOfSameType.publicInstance.render(
 				vnode.props,
 			);
@@ -152,6 +160,7 @@ function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
 		// Instantiate component vnode
 		const instance = {} as Instance<T, P>;
 		const publicInstance = createPublicInstance(vnode, instance);
+		hooks.beforeRender(publicInstance);
 		const childElement = publicInstance.render(props);
 		const childInstance = childElement
 			? instantiate(childElement, parentFrame)
