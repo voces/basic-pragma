@@ -1,15 +1,7 @@
-export type Adapter<T = unknown> = {
-	createFrame: (
-		jsxType: string,
-		parentFrame: T,
-		props: Record<string, unknown>,
-	) => T;
+export type Adapter<T = unknown, P = unknown> = {
+	createFrame: (jsxType: string, parentFrame: T, props: P) => T;
 	cleanupFrame: (frame: T) => void;
-	updateFrameProperties: (
-		frame: T,
-		prevProps: Record<string, unknown>,
-		nextProps: Record<string, unknown>,
-	) => void;
+	updateFrameProperties: (frame: T, prevProps: P, nextProps: P) => void;
 	getParent: (frame: T) => T | undefined;
 };
 
