@@ -8,7 +8,7 @@
 	"types": "./dist/index.d.ts",
 	"scripts": {
 		"build": "tsc --project tsconfig.build.json",
-		"prepublishOnly": "npm run build",
+		"prepublishOnly": "rm -rf dist & npm run build",
 		"test-lint": "eslint src --ext .js,.ts,.jsx,.tsx",
 		"test": "jest"
 	},
