@@ -4,5 +4,5 @@
 		// Remove jest/node
 		"types": []
 	},
-	"exclude": ["node_modules", "**/*.test.ts"]
+	"exclude": ["node_modules", "**/*.test.ts", "src/test"]
 }

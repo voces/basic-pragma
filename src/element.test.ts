@@ -1,4 +1,5 @@
-import { createElement, TEXT_ELEMENT } from "./element";
+import { createElement } from "./element";
+import { TEXT_ELEMENT } from "./common";
 
 describe("createElement", () => {
 	it("empty", () => {
@@ -24,21 +25,21 @@ describe("createElement", () => {
 	});
 
 	it("doesn't render nullish values", () => {
-		expect(createElement("node", {}, [[null, undefined]])).toEqual({
+		expect(createElement("node", {}, [null, undefined])).toEqual({
 			type: "node",
 			props: {},
 		});
 	});
 
 	it("doesn't render booleans", () => {
-		expect(createElement("node", {}, [[false, true]])).toEqual({
+		expect(createElement("node", {}, [false, true])).toEqual({
 			type: "node",
 			props: {},
 		});
 	});
 
 	it("nested", () => {
-		expect(createElement("outer", {}, [[createElement("inner")]])).toEqual({
+		expect(createElement("outer", {}, [createElement("inner")])).toEqual({
 			type: "outer",
 			props: {
 				children: [
@@ -54,7 +55,7 @@ describe("createElement", () => {
 
 describe("createTextElement", () => {
 	it("works", () => {
-		expect(createElement("outer", {}, [["inner"]])).toEqual({
+		expect(createElement("outer", {}, ["inner"])).toEqual({
 			type: "outer",
 			props: {
 				children: [

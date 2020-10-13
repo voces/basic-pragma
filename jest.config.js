@@ -12,5 +12,5 @@ module.exports = {
 	testRegex: "(/src/.*\\.test)\\.[tj]s$",
 	testEnvironment: "node",
 	modulePaths: ["src"],
-	// setupFilesAfterEnv: ["./src/test/setup.ts"],
+	setupFilesAfterEnv: ["./src/test/setup.ts"],
 };

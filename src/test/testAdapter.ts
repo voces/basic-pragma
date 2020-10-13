@@ -15,8 +15,9 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 		this.props = props ?? (({} as any) as P);
 		this.jsxType = jsxType;
 
+		this.parent = parent;
 		// Hide parent since it forms a circular reference
-		Object.defineProperty(this, "parent", {
+		Object["defineProperty"](this, "parent", {
 			value: parent,
 			enumerable: false,
 		});

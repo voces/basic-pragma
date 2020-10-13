@@ -1,4 +1,7 @@
-export type Adapter<T = unknown, P = unknown> = {
+/** @noSelfInFile **/
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export type Adapter<T = any, P = any> = {
 	createFrame: (jsxType: string, parentFrame: T, props: P) => T;
 	cleanupFrame: (frame: T) => void;
 	updateFrameProperties: (frame: T, prevProps: P, nextProps: P) => void;
@@ -6,16 +9,19 @@ export type Adapter<T = unknown, P = unknown> = {
 };
 
 const baseCreateFrame: Adapter["createFrame"] = () => {
-	throw new Error("Adapter has not implemented createFrame");
+	throw "Adapter has not implemented createFrame";
 };
+
 const baseCleanupFrame: Adapter["cleanupFrame"] = () => {
-	throw new Error("Adapter has not implemented cleanupFrame");
+	throw "Adapter has not implemented cleanupFrame";
 };
+
 const baseUpdateFrameProperties: Adapter["updateFrameProperties"] = () => {
-	throw new Error("Adapter has not implemented updateFrameProperties");
+	throw "Adapter has not implemented updateFrameProperties";
 };
+
 const baseGetParent: Adapter["getParent"] = () => {
-	throw new Error("Adapter has not implemented getParent");
+	throw "Adapter has not implemented getParent";
 };
 
 const internalAdapter: Adapter = {
@@ -29,13 +35,9 @@ export const adapter = internalAdapter;
 
 export const setAdapter = (adapter: Partial<Adapter>): void => {
 	// We do this just to ensure we set all methods on intenralAdapter
-	const newAdapter: Adapter = {
-		createFrame: adapter.createFrame ?? baseCreateFrame,
-		cleanupFrame: adapter.cleanupFrame ?? baseCleanupFrame,
-		getParent: adapter.getParent ?? baseGetParent,
-		updateFrameProperties:
-			adapter.updateFrameProperties ?? baseUpdateFrameProperties,
-	};
-
-	Object.assign(internalAdapter, newAdapter);
+	internalAdapter.createFrame = adapter.createFrame ?? baseCreateFrame;
+	internalAdapter.cleanupFrame = adapter.cleanupFrame ?? baseCleanupFrame;
+	internalAdapter.getParent = adapter.getParent ?? baseGetParent;
+	internalAdapter.updateFrameProperties =
+		adapter.updateFrameProperties ?? baseUpdateFrameProperties;
 };

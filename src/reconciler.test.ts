@@ -1,7 +1,6 @@
 import { setAdapter } from "./adapter";
-import { ClassComponent } from "./Component";
 import { createElement } from "./element";
-import { reconcile, render } from "./reconciler";
+import { reconcile, render, ClassComponent } from "./reconciler";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
@@ -71,7 +70,7 @@ describe("reconcile", () => {
 				const root = new TestFrame();
 				const grandChildVNode = createElement("grandchild");
 				const vnode = createElement("child", undefined, [
-					[grandChildVNode],
+					grandChildVNode,
 				]);
 				const instance = reconcile(root, null, vnode);
 				const grandchildFrame = {
@@ -194,7 +193,8 @@ describe("reconcile", () => {
 		it("removing child instances", () => {
 			const root = new TestFrame();
 			const vnode = createElement("child", {}, [
-				[createElement("grandchild"), createElement("grandchild")],
+				createElement("grandchild"),
+				createElement("grandchild"),
 			]);
 			const instance = reconcile(root, null, vnode);
 
@@ -274,10 +274,8 @@ describe("reconcile", () => {
 		it("adding, changing, and removing grandchild props", () => {
 			const root = new TestFrame();
 			const vnode = createElement("child", {}, [
-				[
-					createElement("grandchild", { index: 0 }),
-					createElement("grandchild", { index: 1 }),
-				],
+				createElement("grandchild", { index: 0 }),
+				createElement("grandchild", { index: 1 }),
 			]);
 			const instance = reconcile(root, null, vnode);
 
@@ -289,10 +287,8 @@ describe("reconcile", () => {
 				root,
 				instance,
 				createElement("child", {}, [
-					[
-						createElement("grandchild", { index: 1 }),
-						createElement("grandchild", { index: 2 }),
-					],
+					createElement("grandchild", { index: 1 }),
+					createElement("grandchild", { index: 2 }),
 				]),
 			);
 

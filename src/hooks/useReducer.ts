@@ -1,3 +1,5 @@
+/** @noSelfInFile **/
+
 import { hookContext, hookMap, HookState } from "./base";
 
 export const useReducer = <S, A>(

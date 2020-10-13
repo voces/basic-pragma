@@ -1,5 +1,6 @@
-import { ClassComponent } from "../Component";
-import { hooks } from "../reconciler";
+/** @noSelfInFile **/
+
+import { hooks, ClassComponent } from "../reconciler";
 
 const oldBeforeRender = hooks.beforeRender;
 
@@ -11,7 +12,7 @@ interface HookContext {
 export const hookContext = {} as HookContext;
 
 export interface HookState<S, A> {
-	reducer?: (prevState: S, action: A) => S;
+	reducer?: (this: void, prevState: S, action: A) => S;
 	instance?: ClassComponent<unknown>;
 	value?: [S, (action: A) => void];
 }

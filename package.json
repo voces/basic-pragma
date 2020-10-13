@@ -1,6 +1,6 @@
 {
 	"name": "basic-pragma",
-	"version": "1.0.1",
+	"version": "1.0.2",
 	"description": "Configurable JSX pragma using a basic vdom",
 	"author": "verit",
 	"license": "MIT",
@@ -39,7 +39,8 @@
 		"typescript": "^4.0.3"
 	},
 	"files": [
-		"dist/"
+		"dist/",
+		"src/"
 	],
 	"repository": {
 		"type": "git",
