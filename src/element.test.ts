@@ -1,4 +1,4 @@
-import { createElement } from "./element";
+import { createElement, Fragment } from "./element";
 import { TEXT_ELEMENT } from "./common";
 
 describe("createElement", () => {
@@ -63,6 +63,25 @@ describe("createTextElement", () => {
 						type: TEXT_ELEMENT,
 						props: { nodeValue: "inner" },
 					},
+				],
+			},
+		});
+	});
+});
+
+describe("Fragment", () => {
+	it("works", () => {
+		expect(
+			createElement(Fragment, {}, [
+				createElement("a"),
+				createElement("b"),
+			]),
+		).toEqual({
+			type: Fragment,
+			props: {
+				children: [
+					{ type: "a", props: {} },
+					{ type: "b", props: {} },
 				],
 			},
 		});

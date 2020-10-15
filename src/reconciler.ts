@@ -5,7 +5,7 @@ import {
 	ComponentType,
 	FunctionalComponent as FunctionalComponentType,
 } from "./Component";
-import { VNode } from "./element";
+import { Child, Children, isChild, processChildren, VNode } from "./element";
 import { TEXT_ELEMENT } from "./common";
 
 export const hooks = {
@@ -19,9 +19,7 @@ export interface Instance<T, P> {
 	// FunctionComponents are dynamically converted into ClassComponents
 	publicInstance?: ClassComponent<P> | undefined;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	childInstance: Instance<T, any> | null;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	childInstances: Array<Instance<T, any> | null>;
+	childInstances: Array<Instance<T, any>>;
 	hostFrame: T;
 	vnode: VNode<P>;
 }
@@ -75,6 +73,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 				T,
 				VNodeProps
 			>;
+
 			if (typeof vnode.type === "string") {
 				// Update host vnode
 				adapter.updateFrameProperties(
@@ -82,31 +81,35 @@ export function reconcile<T, VNodeProps, instanceProps>(
 					instance.vnode.props,
 					vnode.props,
 				);
-				instance.childInstances = reconcileChildren(instance, vnode);
-				instanceOfSameType.vnode = vnode;
-				return instanceOfSameType;
-			} else if (instanceOfSameType.publicInstance) {
-				// Update composite instance
+
+				instanceOfSameType.childInstances = reconcileChildren(
+					instanceOfSameType,
+					vnode,
+				);
+			}
+
+			if (instanceOfSameType.publicInstance) {
 				instanceOfSameType.publicInstance.props = vnode.props;
 				hooks.beforeRender(instanceOfSameType.publicInstance);
-				const childElement = instanceOfSameType.publicInstance.render(
+				const rendered = instanceOfSameType.publicInstance.render(
 					vnode.props,
 				);
-				if (!childElement) throw "Failed to render child";
-				const oldChildInstance = instanceOfSameType.childInstance;
-				const childInstance = reconcile(
-					parentFrame,
-					oldChildInstance,
-					childElement,
+
+				const children = isChild(rendered)
+					? rendered
+						? [rendered]
+						: []
+					: rendered;
+
+				instanceOfSameType.childInstances = reconcileChildren(
+					instanceOfSameType,
+					vnode,
+					children,
 				);
-				if (!childInstance) throw "Failed to update composite instance";
-				instanceOfSameType.hostFrame = childInstance.hostFrame;
-				instanceOfSameType.childInstance = childInstance;
-				instanceOfSameType.vnode = vnode;
-				return instanceOfSameType;
-			} else throw "Reconciler catch all error";
+			}
+			instanceOfSameType.vnode = vnode;
+			return instanceOfSameType;
 		}
-		return null;
 	} catch (err) {
 		// TODO: log this error, but in a JavaScript/Lua general way...
 		print(err);
@@ -116,11 +119,10 @@ export function reconcile<T, VNodeProps, instanceProps>(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function cleanupFrames<T>(instance: Instance<T, any>) {
-	// TODO: composite objects need special cleanup, this should be part of reconcile
 	if (instance.childInstances)
 		for (const child of instance.childInstances)
 			if (child != null) cleanupFrames(child);
-	if (instance.childInstance) cleanupFrames(instance.childInstance);
+
 	adapter.cleanupFrame(instance.hostFrame);
 }
 
@@ -128,10 +130,11 @@ function reconcileChildren<T, P>(
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	instance: Instance<T, any>,
 	vnode: VNode<P>,
+	children = vnode.props.children,
 ) {
 	const hostFrame = instance.hostFrame;
 	const childInstances = instance.childInstances;
-	const nextChildElements = vnode.props.children || [];
+	const nextChildElements = processChildren(children || []);
 	const newChildInstances = [];
 	const count = Math.max(childInstances.length, nextChildElements.length);
 	// TODO: add support for keys
@@ -150,6 +153,7 @@ function reconcileChildren<T, P>(
 
 function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
 	const { type, props } = vnode;
+
 	if (typeof type === "string") {
 		if (type === TEXT_ELEMENT) throw "Cannot create inline text, yet";
 		// Instantiate host vnode
@@ -158,7 +162,7 @@ function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
 			parentFrame,
 			props,
 		);
-		const childElements = props.children || [];
+		const childElements = processChildren(props.children || []);
 		const childInstances = childElements.map((child) =>
 			instantiate(child, frame),
 		);
@@ -166,26 +170,23 @@ function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
 			hostFrame: frame,
 			vnode,
 			childInstances,
-			childInstance: null,
 		};
 		return instance;
 	} else {
 		// Instantiate component vnode
-		const instance = {} as Instance<T, P>;
-		const publicInstance = createPublicInstance(vnode, instance);
-		hooks.beforeRender(publicInstance);
-		const childElement = publicInstance.render(props);
-		const childInstance = childElement
-			? instantiate(childElement, parentFrame)
-			: undefined;
-		const hostFrame = childInstance?.hostFrame;
-		const updateProps: Partial<Instance<T, P>> = {
-			hostFrame,
-			vnode,
-			childInstance,
-			publicInstance,
-		};
-		Object.assign(instance, updateProps);
+		const instance = { vnode } as Instance<T, P>;
+		instance.publicInstance = createPublicInstance(vnode, instance);
+		hooks.beforeRender(instance.publicInstance);
+		const rendered = instance.publicInstance.render(props);
+		const childElements = isChild(rendered) ? [rendered] : rendered;
+
+		instance.childInstances = childElements
+			.filter(
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+				(child): child is VNode<any> =>
+					typeof child === "object" && child != null,
+			)
+			.map((child) => instantiate(child, parentFrame));
 		return instance;
 	}
 }
@@ -270,13 +271,10 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
 		instanceMap.set(this, instance);
 	}
 
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	abstract render(props: P): VNode<any> | null;
+	abstract render(props: P): Children | Child;
 }
 
 function updateInstance<T>(internalInstance: Instance<T, unknown>) {
-	const parentDom = adapter.getParent(internalInstance.hostFrame);
 	const vnode = internalInstance.vnode;
-	if (parentDom) reconcile(parentDom, internalInstance, vnode);
-	else throw "Tried to reconcile instance with no dom.parentDom";
+	reconcile(null, internalInstance, vnode);
 }

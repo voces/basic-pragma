@@ -22,7 +22,7 @@ describe("state", () => {
 
 		expect(publicInstance).toBeTruthy();
 		expect(publicInstance?.state).toEqual({ foo: "bar" });
-		expect(component.hostFrame.props).toEqual({
+		expect(component.childInstances[0]!.hostFrame.props).toEqual({
 			foo: "bar",
 			innerFrame: true,
 		});
@@ -30,7 +30,7 @@ describe("state", () => {
 		publicInstance?.setState({ foo: "baz" });
 
 		expect(publicInstance?.state).toEqual({ foo: "baz" });
-		expect(component.hostFrame.props).toEqual({
+		expect(component.childInstances[0]!.hostFrame.props).toEqual({
 			foo: "baz",
 			innerFrame: true,
 		});

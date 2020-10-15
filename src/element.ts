@@ -5,43 +5,25 @@ import { TEXT_ELEMENT } from "./common";
 
 export interface VNode<P> {
 	type: string | ComponentType<P>;
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	props: P & { children?: VNode<any>[] };
+	props: P & { children?: Children };
 	key?: string | number;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type RawChild = VNode<any> | string | boolean | null | undefined;
+export type Child = VNode<any> | string | boolean | null | undefined;
 
-type RawChildren = RawChild[] | RawChild;
+export type Children = Child[];
+
+export const isChild = (obj: Children | Child): obj is Child =>
+	typeof obj === "object" && obj != null && "type" in obj && "props" in obj;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RenderableChildElement = VNode<any> | string;
 
-const EMPTY_OBJECT = {};
-export type EmptyObject = typeof EMPTY_OBJECT;
-
-export function createElement<P>(
-	type: string | ComponentType<P>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	config: P & { key?: string | number; children?: VNode<any>[] },
-	children?: RawChildren[],
-): VNode<P>;
-export function createElement(
-	type: string | ComponentType<typeof EMPTY_OBJECT>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	config?: { key?: string | number; children?: VNode<any>[] },
-	children?: RawChildren[],
-): VNode<typeof EMPTY_OBJECT>;
-export function createElement<P>(
-	type: string | ComponentType<P>,
-	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	config: P & { key?: string | number; children?: VNode<any>[] },
-	children?: RawChildren[],
-): VNode<P> {
-	const { key = null, ...props } = { ...config };
-	const flattenedChildren = (children && children.length > 0 ? children : [])
-		.flat()
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+export const processChildren = (children: Children): VNode<any>[] =>
+	children
+		// .flat()
 		.filter(
 			(c): c is RenderableChildElement =>
 				c != null &&
@@ -50,6 +32,32 @@ export function createElement<P>(
 				(typeof c === "string" || !!c.type),
 		)
 		.map((c) => (typeof c === "string" ? createTextElement(c) : c));
+
+const EMPTY_OBJECT = {};
+export type EmptyObject = typeof EMPTY_OBJECT;
+
+export function createElement<P>(
+	type: string | ComponentType<P>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	config: P & { key?: string | number; children?: VNode<any>[] },
+	children?: Children,
+): VNode<P>;
+export function createElement(
+	type: string | ComponentType<typeof EMPTY_OBJECT>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	config?: { key?: string | number; children?: VNode<any>[] },
+	children?: Children,
+): VNode<typeof EMPTY_OBJECT>;
+export function createElement<P>(
+	type: string | ComponentType<P>,
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	config: P & { key?: string | number; children?: VNode<any>[] },
+	children?: Children,
+): VNode<P> {
+	const { key = null, ...props } = { ...config };
+	const flattenedChildren = processChildren(
+		children && children.length > 0 ? children : [],
+	);
 
 	if (flattenedChildren.length > 0) props.children = flattenedChildren;
 	else delete props.children;
@@ -68,5 +76,5 @@ function createTextElement(value: string): VNode<{ nodeValue: string }> {
 	return createElement(TEXT_ELEMENT, { nodeValue: value });
 }
 
-export const Fragment = (props: { children: RawChildren[] }): RawChildren[] =>
+export const Fragment = (props: { children: Children }): Children =>
 	props.children;
