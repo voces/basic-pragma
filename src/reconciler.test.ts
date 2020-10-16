@@ -129,10 +129,7 @@ describe("reconcile", () => {
 						vnode: bVNode,
 					},
 				],
-				publicInstance: {
-					props: { children: [aVNode, bVNode] },
-					state: {},
-				},
+				component: { props: { children: [aVNode, bVNode] }, state: {} },
 				vnode: {
 					type: Fragment,
 					props: { children: [aVNode, bVNode] },
@@ -163,7 +160,7 @@ describe("reconcile", () => {
 						vnode: { props, type: "base" },
 					},
 				],
-				publicInstance: { props, state: {} },
+				component: { props, state: {} },
 				vnode,
 			});
 		});
@@ -194,7 +191,7 @@ describe("reconcile", () => {
 						vnode: { props, type: "base" },
 					},
 				],
-				publicInstance: { props, state: {} },
+				component: { props, state: {} },
 				vnode,
 			});
 		});
@@ -366,10 +363,7 @@ describe("reconcile", () => {
 						},
 					},
 				],
-				publicInstance: {
-					props: { bar: "bar-1", foo: "foo-1" },
-					state: {},
-				},
+				component: { props: { bar: "bar-1", foo: "foo-1" }, state: {} },
 				vnode,
 			});
 
@@ -387,9 +381,7 @@ describe("reconcile", () => {
 				bar: "bar-2",
 				baz: "baz-1",
 			});
-			expect(instance.component?.props).toEqual(
-				instance.vnode.props,
-			);
+			expect(instance.component?.props).toEqual(instance.vnode.props);
 			expect(instance.childInstances[0]!.vnode.props).toEqual(
 				instance.vnode.props,
 			);
