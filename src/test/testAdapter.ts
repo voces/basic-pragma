@@ -38,7 +38,7 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 export const testAdapter = {
 	createFrame: <P extends Record<string, unknown>>(
 		jsxType: string,
-		parentFrame: TestFrame<P>,
+		parentFrame: TestFrame<P> | undefined,
 		props: P,
 	): TestFrame<P> => new TestFrame(props, parentFrame, jsxType),
 

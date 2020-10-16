@@ -319,7 +319,7 @@ describe("reconcile", () => {
 			);
 
 			expect(newInstance).toEqual(instance);
-			expect(instance.hostFrame.children).toEqual([
+			expect(instance.hostFrame!.children).toEqual([
 				{
 					children: [],
 					jsxType: "grandchild",
@@ -387,7 +387,7 @@ describe("reconcile", () => {
 				bar: "bar-2",
 				baz: "baz-1",
 			});
-			expect(instance.publicInstance?.props).toEqual(
+			expect(instance.component?.props).toEqual(
 				instance.vnode.props,
 			);
 			expect(instance.childInstances[0]!.vnode.props).toEqual(

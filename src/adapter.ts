@@ -2,7 +2,7 @@
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Adapter<T = any, P = any> = {
-	createFrame: (jsxType: string, parentFrame: T, props: P) => T;
+	createFrame: (jsxType: string, parentFrame: T | undefined, props: P) => T;
 	cleanupFrame: (frame: T) => void;
 	updateFrameProperties: (frame: T, prevProps: P, nextProps: P) => void;
 	getParent: (frame: T) => T | undefined;

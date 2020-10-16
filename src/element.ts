@@ -23,7 +23,7 @@ type RenderableChildElement = VNode<any> | string;
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const processChildren = (children: Children): VNode<any>[] =>
 	children
-		// .flat()
+		.flat()
 		.filter(
 			(c): c is RenderableChildElement =>
 				c != null &&
@@ -69,7 +69,7 @@ export function createElement<P>(
 	// Only set key if not nullish
 	if (key != null) vnode.key = key;
 
-	return vnode!;
+	return vnode;
 }
 
 function createTextElement(value: string): VNode<{ nodeValue: string }> {

@@ -15,49 +15,51 @@ export const hooks = {
 	},
 };
 
+/**
+ * A fleshed out vdom, with pointers to instantiated components or frames.
+ */
 export interface Instance<T, P> {
 	// FunctionComponents are dynamically converted into ClassComponents
-	publicInstance?: ClassComponent<P> | undefined;
+	component?: ClassComponent<P> | undefined;
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	childInstances: Array<Instance<T, any>>;
-	hostFrame: T;
+	hostFrame?: T;
 	vnode: VNode<P>;
 }
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-let rootInstance: Instance<any, any> | null = null;
+const containerMap = new WeakMap<any, Instance<any, any>>();
 
 export function render<T, P>(vnode: VNode<P>, container: T): void {
-	const prevInstance = rootInstance;
+	const prevInstance = containerMap.get(container) ?? null;
 	const nextInstance = reconcile(container, prevInstance, vnode);
-	rootInstance = nextInstance;
+	containerMap.set(containerMap, nextInstance);
 }
 
 export function reconcile<T, InstanceProps>(
-	parentFrame: T,
+	parentFrame: T | undefined,
 	instance: Instance<T, InstanceProps> | null,
 	vnode: null,
 ): null;
 export function reconcile<T, VNodeProps, InstanceProps>(
-	parentFrame: T,
-	instance: Instance<T, InstanceProps> | null,
-	vnode: VNode<VNodeProps>,
-): Instance<T, VNodeProps>;
-export function reconcile<T, VNodeProps, InstanceProps>(
-	parentFrame: T,
+	parentFrame: T | undefined,
 	instance: Instance<T, InstanceProps> | null,
 	vnode: VNode<VNodeProps>,
 ): Instance<T, VNodeProps>;
 export function reconcile<T, VNodeProps, instanceProps>(
-	parentFrame: T,
+	parentFrame: T | undefined,
 	instance: Instance<T, instanceProps> | null,
 	vnode: VNode<VNodeProps> | null,
 ): Instance<T, VNodeProps> | null {
 	try {
-		if (!instance)
+		if (!instance) {
+			// vnode is null if we're deleting something; we can't delete
+			// something if there's no instance
+			if (!vnode) return null;
+
 			// Create instance
-			return instantiate(vnode!, parentFrame);
-		else if (!vnode) {
+			return instantiate(vnode, parentFrame);
+		} else if (!vnode) {
 			// Remove instance
 			cleanupFrames(instance);
 			return null;
@@ -74,6 +76,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 				VNodeProps
 			>;
 
+			// vnode for a host frame
 			if (typeof vnode.type === "string") {
 				// Update host vnode
 				adapter.updateFrameProperties(
@@ -86,12 +89,12 @@ export function reconcile<T, VNodeProps, instanceProps>(
 					instanceOfSameType,
 					vnode,
 				);
-			}
 
-			if (instanceOfSameType.publicInstance) {
-				instanceOfSameType.publicInstance.props = vnode.props;
-				hooks.beforeRender(instanceOfSameType.publicInstance);
-				const rendered = instanceOfSameType.publicInstance.render(
+				// vnode for a compositional frame (class/functional component)
+			} else if (instanceOfSameType.component) {
+				instanceOfSameType.component.props = vnode.props;
+				hooks.beforeRender(instanceOfSameType.component);
+				const rendered = instanceOfSameType.component.render(
 					vnode.props,
 				);
 
@@ -107,6 +110,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 					children,
 				);
 			}
+
 			instanceOfSameType.vnode = vnode;
 			return instanceOfSameType;
 		}
@@ -151,7 +155,10 @@ function reconcileChildren<T, P>(
 	return newChildInstances.filter((instance) => instance != null);
 }
 
-function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
+function instantiate<T, P>(
+	vnode: VNode<P>,
+	parentFrame: T | undefined,
+): Instance<T, P> {
 	const { type, props } = vnode;
 
 	if (typeof type === "string") {
@@ -175,9 +182,9 @@ function instantiate<T, P>(vnode: VNode<P>, parentFrame: T): Instance<T, P> {
 	} else {
 		// Instantiate component vnode
 		const instance = { vnode } as Instance<T, P>;
-		instance.publicInstance = createPublicInstance(vnode, instance);
-		hooks.beforeRender(instance.publicInstance);
-		const rendered = instance.publicInstance.render(props);
+		instance.component = createPublicInstance(vnode, instance);
+		hooks.beforeRender(instance.component);
+		const rendered = instance.component.render(props);
 		const childElements = isChild(rendered) ? [rendered] : rendered;
 
 		instance.childInstances = childElements
@@ -244,6 +251,7 @@ function createPublicInstance<T, S, P>(
 			functionalComponentClasses.set(renderFunc, constructor);
 		}
 	}
+
 	const publicInstance = new constructor(props);
 	publicInstance.instance = internalInstance;
 	return publicInstance;
