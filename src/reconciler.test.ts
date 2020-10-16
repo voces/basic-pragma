@@ -1,5 +1,5 @@
 import { setAdapter } from "./adapter";
-import { createElement } from "./element";
+import { createElement, Fragment } from "./element";
 import { reconcile, render, ClassComponent } from "./reconciler";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
@@ -14,7 +14,6 @@ describe("reconcile", () => {
 				const instance = reconcile(root, null, vnode);
 
 				expect(instance).toEqual({
-					childInstance: null,
 					childInstances: [],
 					hostFrame: {
 						children: [],
@@ -34,7 +33,6 @@ describe("reconcile", () => {
 				const instance = reconcile(root, null, vnode);
 
 				expect(instance).toEqual({
-					childInstance: null,
 					childInstances: [],
 					hostFrame: {
 						children: [],
@@ -53,7 +51,6 @@ describe("reconcile", () => {
 				const instance = reconcile(root, null, vnode);
 
 				expect(instance).toEqual({
-					childInstance: null,
 					childInstances: [],
 					hostFrame: {
 						children: [],
@@ -82,10 +79,8 @@ describe("reconcile", () => {
 				const grandchildVnode = { type: "grandchild", props: {} };
 
 				expect(instance).toEqual({
-					childInstance: null,
 					childInstances: [
 						{
-							childInstance: null,
 							childInstances: [],
 							hostFrame: grandchildFrame,
 							vnode: grandchildVnode,
@@ -100,6 +95,45 @@ describe("reconcile", () => {
 					vnode,
 				});
 				expect(root.children.length).toEqual(1);
+			});
+		});
+
+		it("fragments", () => {
+			const root = new TestFrame();
+			const aVNode = createElement("a");
+			const bVNode = createElement("b");
+			const instance = reconcile(
+				root,
+				null,
+				createElement(Fragment, {}, [aVNode, bVNode]),
+			);
+
+			const frame = (overrides: Partial<TestFrame>) => ({
+				children: [],
+				jsxType: "a",
+				props: {},
+				type: "test-frame",
+				...overrides,
+			});
+
+			expect(instance).toEqual({
+				childInstances: [
+					{
+						childInstances: [],
+						hostFrame: frame({ jsxType: "a" }),
+						vnode: aVNode,
+					},
+					{
+						childInstances: [],
+						hostFrame: frame({ jsxType: "b" }),
+						vnode: bVNode,
+					},
+				],
+				component: { props: { children: [aVNode, bVNode] }, state: {} },
+				vnode: {
+					type: Fragment,
+					props: { children: [aVNode, bVNode] },
+				},
 			});
 		});
 
@@ -119,20 +153,14 @@ describe("reconcile", () => {
 			};
 
 			expect(instance).toEqual({
-				childInstance: {
-					childInstance: null,
-					childInstances: [],
-					hostFrame,
-					vnode: {
-						props,
-						type: "base",
+				childInstances: [
+					{
+						childInstances: [],
+						hostFrame,
+						vnode: { props, type: "base" },
 					},
-				},
-				publicInstance: {
-					props,
-					state: {},
-				},
-				hostFrame,
+				],
+				component: { props, state: {} },
 				vnode,
 			});
 		});
@@ -156,20 +184,14 @@ describe("reconcile", () => {
 			};
 
 			expect(instance).toEqual({
-				childInstance: {
-					childInstance: null,
-					childInstances: [],
-					hostFrame,
-					vnode: {
-						props,
-						type: "base",
+				childInstances: [
+					{
+						childInstances: [],
+						hostFrame,
+						vnode: { props, type: "base" },
 					},
-				},
-				publicInstance: {
-					props,
-					state: {},
-				},
-				hostFrame,
+				],
+				component: { props, state: {} },
 				vnode,
 			});
 		});
@@ -207,6 +229,7 @@ describe("reconcile", () => {
 			expect(root).toEqual(expect.objectContaining({ children: [] }));
 		});
 	});
+
 	it("replacing an instance", () => {
 		const root = new TestFrame();
 		const oldChild = createElement("old-child");
@@ -293,7 +316,7 @@ describe("reconcile", () => {
 			);
 
 			expect(newInstance).toEqual(instance);
-			expect(instance.hostFrame.children).toEqual([
+			expect(instance.hostFrame!.children).toEqual([
 				{
 					children: [],
 					jsxType: "grandchild",
@@ -330,20 +353,17 @@ describe("reconcile", () => {
 			};
 
 			expect(instance).toEqual({
-				childInstance: {
-					childInstance: null,
-					childInstances: [],
-					hostFrame,
-					vnode: {
-						props: { bar: "bar-1", foo: "foo-1" },
-						type: "base",
+				childInstances: [
+					{
+						childInstances: [],
+						hostFrame,
+						vnode: {
+							props: { bar: "bar-1", foo: "foo-1" },
+							type: "base",
+						},
 					},
-				},
-				publicInstance: {
-					props: { bar: "bar-1", foo: "foo-1" },
-					state: {},
-				},
-				hostFrame,
+				],
+				component: { props: { bar: "bar-1", foo: "foo-1" }, state: {} },
 				vnode,
 			});
 
@@ -361,10 +381,8 @@ describe("reconcile", () => {
 				bar: "bar-2",
 				baz: "baz-1",
 			});
-			expect(instance.publicInstance?.props).toEqual(
-				instance.vnode.props,
-			);
-			expect(instance.childInstance?.vnode.props).toEqual(
+			expect(instance.component?.props).toEqual(instance.vnode.props);
+			expect(instance.childInstances[0]!.vnode.props).toEqual(
 				instance.vnode.props,
 			);
 		});
