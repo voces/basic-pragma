@@ -184,6 +184,8 @@ function instantiate<T, P>(
 			vnode,
 			childInstances,
 		};
+		// Apply props after instantiating children
+		adapter.updateFrameProperties(frame, {}, props);
 		return instance;
 	} else {
 		// Instantiate component vnode
