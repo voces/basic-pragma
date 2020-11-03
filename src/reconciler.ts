@@ -7,6 +7,7 @@ import {
 } from "./Component";
 import { Child, Children, isChild, processChildren, VNode } from "./element";
 import { TEXT_ELEMENT } from "./common";
+import { compact } from "./utils/arrays";
 
 export const hooks = {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -156,9 +157,9 @@ function reconcileChildren<T, P>(
 			childInstance,
 			childElement,
 		);
-		newChildInstances.push(newChildInstance);
+		if (newChildInstance != null) newChildInstances.push(newChildInstance);
 	}
-	return newChildInstances.filter((instance) => instance != null);
+	return newChildInstances;
 }
 
 function instantiate<T, P>(
@@ -192,16 +193,16 @@ function instantiate<T, P>(
 		const instance = { vnode } as Instance<T, P>;
 		instance.component = createPublicInstance(vnode, instance);
 		hooks.beforeRender(instance.component);
-		const rendered = instance.component.render(props);
+		const rendered = instance.component.render(props) ?? [];
 		const childElements = isChild(rendered) ? [rendered] : rendered;
 
-		instance.childInstances = childElements
+		instance.childInstances = compact(childElements)
 			.filter(
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(child): child is VNode<any> =>
-					typeof child === "object" && child != null,
+				(child): child is VNode<any> => typeof child === "object",
 			)
 			.map((child) => instantiate(child, parentFrame));
+
 		return instance;
 	}
 }
