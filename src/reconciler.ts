@@ -13,6 +13,10 @@ export const hooks = {
 	beforeRender: (instance: ClassComponent<any>): void => {
 		/* do nothing */
 	},
+	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
+	beforeUnmount: (instance: ClassComponent<any>): void => {
+		/* do nothing */
+	},
 };
 
 /**
@@ -123,11 +127,13 @@ export function reconcile<T, VNodeProps, instanceProps>(
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function cleanupFrames<T>(instance: Instance<T, any>) {
+	if (instance.component) hooks.beforeUnmount(instance.component);
+
 	if (instance.childInstances)
 		for (const child of instance.childInstances)
 			if (child != null) cleanupFrames(child);
 
-	adapter.cleanupFrame(instance.hostFrame);
+	if (instance.hostFrame) adapter.cleanupFrame(instance.hostFrame);
 }
 
 function reconcileChildren<T, P>(
@@ -286,3 +292,5 @@ function updateInstance<T>(internalInstance: Instance<T, unknown>) {
 	const vnode = internalInstance.vnode;
 	reconcile(null, internalInstance, vnode);
 }
+
+export const test = { functionalComponentClasses };

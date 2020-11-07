@@ -1,6 +1,6 @@
 import { setAdapter } from "./adapter";
 import { createElement, Fragment } from "./element";
-import { reconcile, render, ClassComponent } from "./reconciler";
+import { reconcile, render, ClassComponent, test } from "./reconciler";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
@@ -386,6 +386,21 @@ describe("reconcile", () => {
 				instance.vnode.props,
 			);
 		});
+	});
+
+	it("memoizes functional components", () => {
+		const FunctionalComponent = () => createElement("base", { foo: "bar" });
+
+		reconcile(new TestFrame(), null, createElement(FunctionalComponent));
+		const klass = test.functionalComponentClasses.get(FunctionalComponent);
+
+		expect(klass).not.toEqual(undefined);
+
+		reconcile(new TestFrame(), null, createElement(FunctionalComponent));
+
+		expect(
+			test.functionalComponentClasses.get(FunctionalComponent),
+		).toEqual(klass);
 	});
 });
 

@@ -1,6 +1,8 @@
 /** @noSelfInFile **/
 
-import { hookContext, hookMap, HookState } from "./base";
+import { hookContext, hookMap } from "./context";
+import { HookState } from "./types";
+import "./reconcilerHooks";
 
 export const useReducer = <S, A>(
 	reducer: (prevState: S, action: A) => S,
@@ -8,7 +10,11 @@ export const useReducer = <S, A>(
 ): [S, (action: A) => void] => {
 	const index = hookContext.currentIndex++;
 	const hooks = hookMap.get(hookContext.currentInstance)!;
-	const state = (hooks[index] ?? (hooks[index] = {})) as HookState<S, A>;
+	const state = (hooks[index] ??
+		(hooks[index] = { type: "reducer" })) as HookState<S, A>;
+
+	if (state.type !== "reducer")
+		throw `Expected a reducer hook at index ${index}, got ${state.type}`;
 
 	state.reducer = reducer;
 
