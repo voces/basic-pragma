@@ -8,7 +8,6 @@ import {
 import { Child, Children, isChild, processChildren, VNode } from "./element";
 import { isLua, TEXT_ELEMENT } from "./common";
 import { compact } from "./utils/arrays";
-import { log } from "./utils/log";
 
 export const hooks = {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
