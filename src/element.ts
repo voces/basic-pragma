@@ -16,7 +16,12 @@ export type Child = VNode<any> | string | boolean | null | undefined;
 export type Children = (Child[] | Child)[];
 
 export const isChild = (obj: Children | Child): obj is Child =>
-	typeof obj === "object" && obj != null && "type" in obj && "props" in obj;
+	(typeof obj === "object" &&
+		obj != null &&
+		"type" in obj &&
+		"props" in obj) ||
+	typeof obj === "boolean" ||
+	typeof obj === "string";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RenderableChildElement = VNode<any> | string;

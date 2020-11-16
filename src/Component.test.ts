@@ -28,6 +28,7 @@ describe("state", () => {
 		});
 
 		publicInstance?.setState({ foo: "baz" });
+		jest.runAllTimers();
 
 		expect(publicInstance?.state).toEqual({ foo: "baz" });
 		expect(component.childInstances[0]!.hostFrame!.props).toEqual({

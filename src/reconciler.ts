@@ -6,8 +6,9 @@ import {
 	FunctionalComponent as FunctionalComponentType,
 } from "./Component";
 import { Child, Children, isChild, processChildren, VNode } from "./element";
-import { TEXT_ELEMENT } from "./common";
+import { isLua, TEXT_ELEMENT } from "./common";
 import { compact } from "./utils/arrays";
+import { log } from "./utils/log";
 
 export const hooks = {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -98,7 +99,15 @@ export function reconcile<T, VNodeProps, instanceProps>(
 				// vnode for a compositional frame (class/functional component)
 			} else if (instanceOfSameType.component) {
 				instanceOfSameType.component.props = vnode.props;
-				hooks.beforeRender(instanceOfSameType.component);
+
+				try {
+					hooks.beforeRender(instanceOfSameType.component);
+				} catch (err) {
+					print(err);
+					cleanupFrames(instance);
+					throw err;
+				}
+
 				const rendered = instanceOfSameType.component.render(
 					vnode.props,
 				);
@@ -192,7 +201,13 @@ function instantiate<T, P>(
 		// Instantiate component vnode
 		const instance = { vnode } as Instance<T, P>;
 		instance.component = createPublicInstance(vnode, instance);
-		hooks.beforeRender(instance.component);
+
+		try {
+			hooks.beforeRender(instance.component);
+		} catch (err) {
+			print(err);
+		}
+
 		const rendered = instance.component.render(props) ?? [];
 		const childElements = isChild(rendered) ? [rendered] : rendered;
 
@@ -213,8 +228,6 @@ const functionalComponentClasses = new WeakMap<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	new (props: any) => ClassComponent<any>
 >();
-
-const isLua = "_VERSION" in globalThis;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isClass = (constructor: ComponentType<any>) => {
@@ -273,6 +286,12 @@ const instanceMap = new WeakMap<
 	Instance<any, any>
 >();
 
+const scheduledUpdates = new Set<Instance<unknown, unknown>>();
+const scheduleUpdate = <T>(instance: Instance<T, unknown>) => {
+	scheduledUpdates.add(instance);
+	adapter.scheduleUpdate();
+};
+
 export abstract class ClassComponent<P, S = unknown, T = unknown> {
 	state = {} as S;
 
@@ -281,7 +300,7 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
 	setState(partialState: Partial<S>): void {
 		this.state = { ...this.state, ...partialState };
 		const instance = instanceMap.get(this)!;
-		if (instance) updateInstance(instance);
+		if (instance) scheduleUpdate(instance);
 	}
 
 	set instance(instance: Instance<T, P>) {
@@ -295,5 +314,10 @@ function updateInstance<T>(internalInstance: Instance<T, unknown>) {
 	const vnode = internalInstance.vnode;
 	reconcile(null, internalInstance, vnode);
 }
+
+export const flushUpdates = (): void => {
+	for (const instance of scheduledUpdates.values()) updateInstance(instance);
+	scheduledUpdates.clear();
+};
 
 export const test = { functionalComponentClasses };

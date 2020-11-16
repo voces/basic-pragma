@@ -3,3 +3,5 @@ const globals = globalThis as any;
 
 // eslint-disable-next-line no-console
 globals.print = console.log;
+
+jest.useFakeTimers();
