@@ -15,6 +15,7 @@ export const useRef = <T>(initial: T): { current: T } => {
 		throw `Expected a effect hook at index ${index}, got ${state.type}`;
 
 	// Ideally I'd use a setter/getter, but tstl doesn't support that
+	Object.defineProperty(state, "type", { enumerable: false });
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	return (state as any) as { current: T };
 };

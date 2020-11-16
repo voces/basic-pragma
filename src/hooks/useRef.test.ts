@@ -19,8 +19,5 @@ it("works", () => {
 		createElement(TestComponent),
 	);
 
-	expect(ref).toEqual({
-		current: instance.childInstances[0].hostFrame,
-		type: "ref",
-	});
+	expect(ref).toEqual({ current: instance.childInstances[0].hostFrame });
 });
