@@ -80,5 +80,8 @@ function createTextElement(value: string): VNode<{ nodeValue: string }> {
 	return createElement(TEXT_ELEMENT, { nodeValue: value });
 }
 
-export const Fragment = ({ children }: { children: Children }): Children =>
-	children;
+export const Fragment = ({
+	children,
+}: {
+	children?: Children;
+}): Children | null => children ?? null;
