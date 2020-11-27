@@ -16,7 +16,7 @@ export const useEffect = <I extends Inputs>(
 		(hooks[index] = { type: "effect" })) as HookState<I>;
 
 	if (state.type !== "effect")
-		throw `Expected a effect hook at index ${index}, got ${state.type}`;
+		throw `Expected an effect hook at index ${index}, got ${state.type}`;
 
 	if (
 		!oldState ||

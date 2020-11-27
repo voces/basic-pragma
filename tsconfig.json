@@ -1,16 +1,14 @@
 {
 	"compilerOptions": {
-		"alwaysStrict": true,
 		"declaration": true,
 		"forceConsistentCasingInFileNames": true,
 		"lib": ["ESNext"],
 		"module": "commonjs",
 		"moduleResolution": "node",
-		"noImplicitAny": true,
 		"noImplicitThis": true,
 		"outDir": "./dist/",
 		"skipLibCheck": true,
-		"strictNullChecks": true,
+		"strict": true,
 		"target": "ESNext",
 		"types": ["@types/jest", "@types/node"]
 	},
