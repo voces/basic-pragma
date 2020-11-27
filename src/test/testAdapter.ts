@@ -1,4 +1,5 @@
 import { EmptyObject } from "../element";
+import { flushUpdates } from "../reconciler";
 
 export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 	readonly type = "test-frame";
@@ -11,8 +12,17 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 	constructor(props?: EmptyObject, parent?: TestFrame, jsxType?: string);
 	constructor(props: P, parent?: TestFrame, jsxType?: string);
 	constructor(props?: P, parent?: TestFrame, jsxType?: string) {
-		// eslint-disable-next-line @typescript-eslint/no-explicit-any
-		this.props = props ?? (({} as any) as P);
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const frame = this;
+		this.props = Object.assign(
+			({
+				set ref(ref: { current: unknown }) {
+					ref.current = frame;
+				},
+				// eslint-disable-next-line @typescript-eslint/no-explicit-any
+			} as any) as P,
+			props,
+		);
 		this.jsxType = jsxType;
 
 		this.parent = parent;
@@ -34,6 +44,8 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 		for (const child of this.children) child.dispose();
 	}
 }
+
+let waiting = false;
 
 export const testAdapter = {
 	createFrame: <P extends Record<string, unknown>>(
@@ -64,4 +76,13 @@ export const testAdapter = {
 	getParent: <P extends Record<string, unknown>>(
 		frame: TestFrame<P>,
 	): TestFrame | undefined => frame.parent,
+
+	scheduleUpdate: (): void => {
+		if (waiting) return;
+		waiting = true;
+		setImmediate(() => {
+			waiting = false;
+			flushUpdates();
+		});
+	},
 };

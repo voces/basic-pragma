@@ -52,6 +52,7 @@ it("invokes effect if args change", () => {
 	expect(fn).toHaveBeenCalledTimes(1);
 
 	inc();
+	jest.runAllTimers();
 
 	expect(fn).toHaveBeenCalledTimes(2);
 });
@@ -73,6 +74,7 @@ it("cleans up on each invocation", () => {
 	expect(clean).toHaveBeenCalledTimes(0);
 
 	inc();
+	jest.runAllTimers();
 
 	expect(clean).toHaveBeenCalledTimes(1);
 	expect(fn).toHaveBeenCalledTimes(2);

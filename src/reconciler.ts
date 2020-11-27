@@ -6,7 +6,8 @@ import {
 	FunctionalComponent as FunctionalComponentType,
 } from "./Component";
 import { Child, Children, isChild, processChildren, VNode } from "./element";
-import { TEXT_ELEMENT } from "./common";
+import { isLua, TEXT_ELEMENT } from "./common";
+import { compact } from "./utils/arrays";
 
 export const hooks = {
 	// eslint-disable-next-line @typescript-eslint/no-unused-vars, @typescript-eslint/no-explicit-any
@@ -97,7 +98,15 @@ export function reconcile<T, VNodeProps, instanceProps>(
 				// vnode for a compositional frame (class/functional component)
 			} else if (instanceOfSameType.component) {
 				instanceOfSameType.component.props = vnode.props;
-				hooks.beforeRender(instanceOfSameType.component);
+
+				try {
+					hooks.beforeRender(instanceOfSameType.component);
+				} catch (err) {
+					print(err);
+					cleanupFrames(instance);
+					throw err;
+				}
+
 				const rendered = instanceOfSameType.component.render(
 					vnode.props,
 				);
@@ -156,9 +165,9 @@ function reconcileChildren<T, P>(
 			childInstance,
 			childElement,
 		);
-		newChildInstances.push(newChildInstance);
+		if (newChildInstance != null) newChildInstances.push(newChildInstance);
 	}
-	return newChildInstances.filter((instance) => instance != null);
+	return newChildInstances;
 }
 
 function instantiate<T, P>(
@@ -184,22 +193,30 @@ function instantiate<T, P>(
 			vnode,
 			childInstances,
 		};
+		// Apply props after instantiating children
+		adapter.updateFrameProperties(frame, {}, props);
 		return instance;
 	} else {
 		// Instantiate component vnode
 		const instance = { vnode } as Instance<T, P>;
 		instance.component = createPublicInstance(vnode, instance);
-		hooks.beforeRender(instance.component);
-		const rendered = instance.component.render(props);
+
+		try {
+			hooks.beforeRender(instance.component);
+		} catch (err) {
+			print(err);
+		}
+
+		const rendered = instance.component.render(props) ?? [];
 		const childElements = isChild(rendered) ? [rendered] : rendered;
 
-		instance.childInstances = childElements
+		instance.childInstances = compact(childElements)
 			.filter(
 				// eslint-disable-next-line @typescript-eslint/no-explicit-any
-				(child): child is VNode<any> =>
-					typeof child === "object" && child != null,
+				(child): child is VNode<any> => typeof child === "object",
 			)
 			.map((child) => instantiate(child, parentFrame));
+
 		return instance;
 	}
 }
@@ -210,8 +227,6 @@ const functionalComponentClasses = new WeakMap<
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	new (props: any) => ClassComponent<any>
 >();
-
-const isLua = "_VERSION" in globalThis;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 const isClass = (constructor: ComponentType<any>) => {
@@ -270,6 +285,12 @@ const instanceMap = new WeakMap<
 	Instance<any, any>
 >();
 
+const scheduledUpdates = new Set<Instance<unknown, unknown>>();
+const scheduleUpdate = <T>(instance: Instance<T, unknown>) => {
+	scheduledUpdates.add(instance);
+	adapter.scheduleUpdate();
+};
+
 export abstract class ClassComponent<P, S = unknown, T = unknown> {
 	state = {} as S;
 
@@ -278,7 +299,7 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
 	setState(partialState: Partial<S>): void {
 		this.state = { ...this.state, ...partialState };
 		const instance = instanceMap.get(this)!;
-		if (instance) updateInstance(instance);
+		if (instance) scheduleUpdate(instance);
 	}
 
 	set instance(instance: Instance<T, P>) {
@@ -292,5 +313,10 @@ function updateInstance<T>(internalInstance: Instance<T, unknown>) {
 	const vnode = internalInstance.vnode;
 	reconcile(null, internalInstance, vnode);
 }
+
+export const flushUpdates = (): void => {
+	for (const instance of scheduledUpdates.values()) updateInstance(instance);
+	scheduledUpdates.clear();
+};
 
 export const test = { functionalComponentClasses };

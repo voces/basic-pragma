@@ -13,10 +13,10 @@ export const useEffect = <I extends Inputs>(
 	const hooks = hookMap.get(hookContext.currentInstance)!;
 	const oldState = hooks[index];
 	const state = (oldState ??
-		(hooks[index] = { type: "effect" })) as HookState<I, unknown>;
+		(hooks[index] = { type: "effect" })) as HookState<I>;
 
 	if (state.type !== "effect")
-		throw `Expected a effect hook at index ${index}, got ${state.type}`;
+		throw `Expected an effect hook at index ${index}, got ${state.type}`;
 
 	if (
 		!oldState ||

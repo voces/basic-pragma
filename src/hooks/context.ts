@@ -12,5 +12,6 @@ export const hookContext = {} as HookContext;
 
 export const hookMap = new WeakMap<
 	ClassComponent<unknown>,
-	HookState<unknown, unknown>[]
+	// eslint-disable-next-line @typescript-eslint/no-explicit-any
+	HookState<any, unknown>[]
 >();

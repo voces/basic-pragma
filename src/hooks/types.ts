@@ -15,4 +15,12 @@ export interface EffectHookState<I> {
 	cleanup?: void | (() => void);
 }
 
-export type HookState<S, A> = ReducerState<S, A> | EffectHookState<S>;
+export interface RefState<T> {
+	type: "ref";
+	current: T;
+}
+
+export type HookState<S, A = unknown> =
+	| ReducerState<S, A>
+	| EffectHookState<S>
+	| RefState<S>;

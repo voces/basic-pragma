@@ -2,6 +2,7 @@
 
 import { ComponentType } from "./Component";
 import { TEXT_ELEMENT } from "./common";
+import { compact, getLength } from "./utils/arrays";
 
 export interface VNode<P> {
 	type: string | ComponentType<P>;
@@ -12,21 +13,24 @@ export interface VNode<P> {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type Child = VNode<any> | string | boolean | null | undefined;
 
-export type Children = Child[];
+export type Children = (Child[] | Child)[];
 
 export const isChild = (obj: Children | Child): obj is Child =>
-	typeof obj === "object" && obj != null && "type" in obj && "props" in obj;
+	(typeof obj === "object" &&
+		obj != null &&
+		"type" in obj &&
+		"props" in obj) ||
+	typeof obj === "boolean" ||
+	typeof obj === "string";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type RenderableChildElement = VNode<any> | string;
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const processChildren = (children: Children): VNode<any>[] =>
-	children
-		.flat()
+	compact(compact(children).flat())
 		.filter(
 			(c): c is RenderableChildElement =>
-				c != null &&
 				typeof c !== "boolean" &&
 				// filters out empty objects which are left because Array.flat() is not correct
 				(typeof c === "string" || !!c.type),
@@ -56,7 +60,7 @@ export function createElement<P>(
 ): VNode<P> {
 	const { key = null, ...props } = { ...config };
 	const flattenedChildren = processChildren(
-		children && children.length > 0 ? children : [],
+		children && getLength(children) > 0 ? children : [],
 	);
 
 	if (flattenedChildren.length > 0) props.children = flattenedChildren;
@@ -76,5 +80,8 @@ function createTextElement(value: string): VNode<{ nodeValue: string }> {
 	return createElement(TEXT_ELEMENT, { nodeValue: value });
 }
 
-export const Fragment = (props: { children: Children }): Children =>
-	props.children;
+export const Fragment = ({
+	children,
+}: {
+	children?: Children;
+}): Children | null => children ?? null;
