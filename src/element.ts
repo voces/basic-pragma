@@ -44,19 +44,19 @@ export function createElement<P>(
 	type: string | ComponentType<P>,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	config: P & { key?: string | number; children?: VNode<any>[] },
-	children?: Children,
+	...children: Children
 ): VNode<P>;
 export function createElement(
 	type: string | ComponentType<typeof EMPTY_OBJECT>,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	config?: { key?: string | number; children?: VNode<any>[] },
-	children?: Children,
+	...children: Children
 ): VNode<typeof EMPTY_OBJECT>;
 export function createElement<P>(
 	type: string | ComponentType<P>,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
 	config: P & { key?: string | number; children?: VNode<any>[] },
-	children?: Children,
+	...children: Children
 ): VNode<P> {
 	const { key = null, ...props } = { ...config };
 	const flattenedChildren = processChildren(
