@@ -43,32 +43,32 @@ export type EmptyObject = typeof EMPTY_OBJECT;
 export function createElement<P>(
 	type: string | ComponentType<P>,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	config: P & { key?: string | number; children?: VNode<any>[] },
+	props: P & { key?: string | number; children?: VNode<any>[] },
 	...children: Children
 ): VNode<P>;
 export function createElement(
 	type: string | ComponentType<typeof EMPTY_OBJECT>,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	config?: { key?: string | number; children?: VNode<any>[] },
+	props?: { key?: string | number; children?: VNode<any>[] },
 	...children: Children
 ): VNode<typeof EMPTY_OBJECT>;
 export function createElement<P>(
 	type: string | ComponentType<P>,
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	config: P & { key?: string | number; children?: VNode<any>[] },
+	props: P & { key?: string | number; children?: VNode<any>[] },
 	...children: Children
 ): VNode<P> {
-	const { key = null, ...props } = { ...config };
+	const { key = null, ...rest } = { ...props };
 	const flattenedChildren = processChildren(
 		children && getLength(children) > 0 ? children : [],
 	);
 
-	if (flattenedChildren.length > 0) props.children = flattenedChildren;
-	else delete props.children;
+	if (flattenedChildren.length > 0) rest.children = flattenedChildren;
+	else delete rest.children;
 
 	// IDK why this is mad, prop is LocalP - key + children, which should work...
 	// eslint-disable-next-line @typescript-eslint/no-explicit-any
-	const vnode: VNode<P> = { type, props } as any;
+	const vnode: VNode<P> = { type, props: rest } as any;
 
 	// Only set key if not nullish
 	if (key != null) vnode.key = key;
