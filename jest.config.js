@@ -1,5 +1,5 @@
 module.exports = {
-	globals: { "ts-jest": { tsConfig: "tsconfig.json" } },
+	globals: { "ts-jest": { tsconfig: "tsconfig.json" } },
 	moduleFileExtensions: ["ts", "js"],
 	moduleNameMapper: {
 		"^test/(.*)$": "<rootDir>/test/$1",
