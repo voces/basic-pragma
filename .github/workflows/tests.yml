@@ -18,8 +18,8 @@ jobs:
       run: npm install
     - name: Run tests
       run: npm test
+    - uses: denoland/setup-deno@v1
     - name: Run linter
-      uses: denoland/setup-deno@v1
       run: npm run test-lint
     - name: Run build
       run: npm run build
