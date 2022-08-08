@@ -4,7 +4,7 @@ on:
     paths:
       - '**.tsx?'
       - 'package.json'
-      - '.github'
+      - '.github/**'
   workflow_dispatch:
 jobs:
   build:
