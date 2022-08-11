@@ -1,25 +1,25 @@
 {
-	"version": "2.0.0",
-	"tasks": [
-		{
-			"type": "npm",
-			"script": "build",
-			"problemMatcher": [
-				"$tsc"
-			],
-			"group": {
-				"isDefault": true,
-				"kind": "build"
-			},
-			"label": "build",
-			"detail": "tsc",
-			"presentation": {
-				"echo": true,
-				"reveal": "never",
-				"focus": false,
-				"panel": "shared",
-				"clear": true
-			}
-		}
-	]
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "npm",
+      "script": "build",
+      "problemMatcher": [
+        "$tsc"
+      ],
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      },
+      "label": "build",
+      "detail": "tsc",
+      "presentation": {
+        "echo": true,
+        "reveal": "never",
+        "focus": false,
+        "panel": "shared",
+        "clear": true
+      }
+    }
+  ]
 }

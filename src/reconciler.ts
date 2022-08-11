@@ -174,14 +174,11 @@ function instantiate<T, P>(
     const childInstances = childElements.map((child) =>
       instantiate(child, frame)
     );
-    const instance: Instance<T, P> = {
+    return {
       hostFrame: frame,
       vnode,
       childInstances,
     };
-    // Apply props after instantiating children
-    adapter.updateFrameProperties(frame, {}, props);
-    return instance;
   } else {
     // Instantiate component vnode
     const instance = { vnode } as Instance<T, P>;
