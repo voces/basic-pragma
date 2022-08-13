@@ -2,7 +2,7 @@ import { setAdapter } from "./adapter";
 import { createContext } from "./createContext";
 import { createElement, VNode } from "./element";
 import { useState } from "./hooks/useState";
-import { reconcile, render } from "./reconciler";
+import { render } from "./reconciler";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
@@ -10,10 +10,9 @@ setAdapter(testAdapter);
 it("no provider uses default value", () => {
   const { Consumer } = createContext("foo");
   const fn = jest.fn();
-  reconcile(
-    new TestFrame(),
-    null,
+  render(
     createElement(Consumer, undefined, (v) => fn(v)),
+    new TestFrame(),
   );
 
   expect(fn).toHaveBeenCalledWith("foo");
@@ -22,14 +21,13 @@ it("no provider uses default value", () => {
 it("use provider's value", () => {
   const { Consumer, Provider } = createContext("foo");
   const fn = jest.fn();
-  reconcile(
-    new TestFrame(),
-    null,
+  render(
     createElement(
       Provider,
       { value: "bar" },
       createElement(Consumer, undefined, (v) => fn(v)),
     ),
+    new TestFrame(),
   );
 
   expect(fn).toHaveBeenCalledWith("bar");
@@ -38,9 +36,7 @@ it("use provider's value", () => {
 it("use provider's value, even if deep", () => {
   const { Consumer, Provider } = createContext("foo");
   const fn = jest.fn();
-  reconcile(
-    new TestFrame(),
-    null,
+  render(
     createElement(
       Provider,
       { value: "bar" },
@@ -50,6 +46,7 @@ it("use provider's value, even if deep", () => {
         createElement(Consumer, undefined, (v) => fn(v)),
       ),
     ),
+    new TestFrame(),
   );
 
   expect(fn).toHaveBeenCalledWith("bar");
@@ -58,9 +55,7 @@ it("use provider's value, even if deep", () => {
 it("use nearest provider", () => {
   const { Consumer, Provider } = createContext("foo");
   const fn = jest.fn();
-  reconcile(
-    new TestFrame(),
-    null,
+  render(
     createElement(
       Provider,
       { value: "bar" },
@@ -71,6 +66,7 @@ it("use nearest provider", () => {
         createElement(Consumer, undefined, (v) => fn(v)),
       ),
     ),
+    new TestFrame(),
   );
 
   expect(fn).toHaveBeenCalledTimes(2);
