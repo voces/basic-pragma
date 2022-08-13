@@ -47,11 +47,12 @@ export const createContext = <T>(defaultValue: T) => {
 
     sub(instance: Instance<unknown, unknown>) {
       this.subs.add(instance);
-      if (instance.component) {
-        const oldComponentWillUnmount = instance.component.componentWillUnmount;
-        instance.component.componentWillUnmount = () => {
+      const component = instance.component;
+      if (component) {
+        const oldComponentWillUnmount = component.componentWillUnmount;
+        component.componentWillUnmount = () => {
           this.subs.delete(instance);
-          instance.component!.componentWillUnmount = oldComponentWillUnmount;
+          component.componentWillUnmount = oldComponentWillUnmount;
           oldComponentWillUnmount();
         };
       }

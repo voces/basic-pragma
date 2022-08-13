@@ -321,7 +321,7 @@ describe("reconcile", () => {
       );
 
       expect(newInstance).toEqual(instance);
-      expect(instance.hostFrame!.children).toEqual([
+      expect(instance.hostFrame?.children).toEqual([
         {
           children: [],
           jsxType: "grandchild",

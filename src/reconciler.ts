@@ -24,11 +24,11 @@ export const hooks = {
  * A fleshed out vdom, with pointers to instantiated components or frames.
  */
 export interface Instance<T, P> {
+  vnode: VNode<P>;
+  childInstances: Instance<T, unknown>[];
   // FunctionComponents are dynamically converted into ClassComponents
   component?: ClassComponent<P> | undefined;
-  childInstances: Instance<T, unknown>[];
   hostFrame?: T;
-  vnode: VNode<P>;
 }
 
 // deno-lint-ignore no-explicit-any
@@ -81,6 +81,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
         T,
         VNodeProps
       >;
+      const component = instanceOfSameType.component;
 
       // vnode for a host frame
       if (typeof vnode.type === "string") {
@@ -98,19 +99,19 @@ export function reconcile<T, VNodeProps, instanceProps>(
         );
 
         // vnode for a compositional frame (class/functional component)
-      } else if (instanceOfSameType.component) {
-        instanceOfSameType.component.props = vnode.props;
-        contexts = updateContexts(contexts, instanceOfSameType.component!);
+      } else if (component) {
+        component.props = vnode.props;
+        contexts = updateContexts(contexts, component);
 
         try {
-          hooks.beforeRender(instanceOfSameType.component);
+          hooks.beforeRender(component);
         } catch (err) {
           console.error(err);
           cleanupFrames(instance);
           throw err;
         }
 
-        const children = processChildren(instanceOfSameType.component.render(
+        const children = processChildren(component.render(
           { ...vnode.props, children: vnode.children },
           contexts,
         ));
@@ -148,8 +149,8 @@ const updateContexts = (
   // deno-lint-ignore no-explicit-any
   component: ClassComponent<any>,
 ) => {
-  if ("context" in component.constructor) {
-    const context = (component.constructor as ComponentClass).context!;
+  const context = (component.constructor as ComponentClass).context;
+  if (context != null) {
     contexts = {
       ...contexts,
       [context.id]: component as InstanceType<Context<unknown>["Provider"]>,
@@ -314,7 +315,7 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
 
   setState(partialState: Partial<S>): void {
     this.state = { ...this.state, ...partialState };
-    const instance = instanceMap.get(this)!;
+    const instance = instanceMap.get(this);
     if (instance) scheduleUpdate(instance);
   }
 
