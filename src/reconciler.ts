@@ -171,8 +171,6 @@ function reconcileChildren<T, P>(
   for (let i = 0; i < count; i++) {
     const childInstance = childInstances[i];
     const childElement = children[i];
-    // if (childInstance.component && "context" in childInstance.component)
-    //   contexts[childInstance.component.context.id] =
     const newChildInstance = reconcile(
       hostFrame,
       childInstance,
