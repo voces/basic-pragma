@@ -16,12 +16,11 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
     // deno-lint-ignore no-this-alias
     const frame = this;
     this.props = Object.assign(
-      ({
+      {
         set ref(ref: { current: unknown }) {
           ref.current = frame;
         },
-        // deno-lint-ignore no-explicit-any
-      } as any) as P,
+      },
       props,
     );
     this.jsxType = jsxType;

@@ -297,8 +297,7 @@ export const scheduleUpdate = <T>(instance: Instance<T, unknown>) => {
 
 export type Contexts = {
   [contextId: number]:
-    // deno-lint-ignore no-explicit-any
-    | InstanceType<Context<any>["Provider"]>
+    | InstanceType<Context<unknown>["Provider"]>
     | undefined;
 };
 

@@ -19,7 +19,8 @@ export type Children = Child[] | Children[];
 type RenderableChildElement = VNode | string;
 
 export const processChildren = (children: Children | Child): VNode[] =>
-  compact((Array.isArray(children) ? children : [children]).flat(10) as Child[])
+  // TS gets mad beyond 21. Array nesting (rather than using JSX) super deep shouldn't naturally occur...
+  compact((Array.isArray(children) ? children : [children]).flat(21) as Child[])
     .filter(
       (c): c is RenderableChildElement =>
         typeof c !== "boolean" &&
@@ -65,7 +66,6 @@ export const createElement = <P, T extends string | ComponentType<P>>(
     ? processedChildren
     : undefined;
 
-  // IDK why this is mad, prop is LocalP - key + children, which should work...
   const vnode: VNode<P> = {
     type,
     props: rest as unknown as P,

@@ -9,6 +9,7 @@ const oldBeforeUnmount = hooks.beforeUnmount;
 hooks.beforeRender = (instance) => {
   oldBeforeRender(instance);
 
+  // TODO: somehow switch to a context/with pattern
   hookContext.currentInstance = instance as ClassComponent<unknown>;
   hookContext.currentIndex = 0;
 
