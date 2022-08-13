@@ -4,7 +4,8 @@ import type { Child, Children } from "./element";
 import type { ComponentClass, Contexts } from "./reconciler";
 
 export type FunctionalComponent<P> = (
-  props: P & { children?: Children; key?: string | number },
+  // TODO: Do rewriting on children similar to createElement
+  props: P & { children?: Child[]; key?: string | number },
   contexts: Contexts,
 ) => Children | Child;
 

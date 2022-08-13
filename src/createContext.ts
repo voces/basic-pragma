@@ -1,7 +1,7 @@
 /** @noSelfInFile **/
 
 import { FunctionalComponent } from "./Component";
-import type { Children, VNode } from "./element";
+import type { Child, VNode } from "./element";
 import {
   ClassComponent,
   ComponentClass,
@@ -12,9 +12,10 @@ import {
 
 export let i = 0;
 
-export type Context<T = unknown> = {
+export type Context<T> = {
   id: number;
-  Consumer: FunctionalComponent<{ children: (value: T) => VNode<unknown> }>;
+  // deno-lint-ignore no-explicit-any
+  Consumer: FunctionalComponent<{ children: [(value: T) => VNode<any>] }>;
   Provider: ComponentClass<{ value: T }>;
   defaultValue: T;
 };
@@ -22,7 +23,10 @@ export type Context<T = unknown> = {
 export const createContext = <T>(defaultValue: T) => {
   const ctx = {
     id: i++,
-    Consumer: (props, contexts) => props.children(contexts[ctx.id] as T),
+    Consumer: (props, contexts) =>
+      props.children[0](
+        contexts[ctx.id] as T | undefined ?? defaultValue,
+      ),
     defaultValue,
   } as Context<T>;
 
@@ -43,7 +47,7 @@ export const createContext = <T>(defaultValue: T) => {
     }
 
     render(
-      { value, children }: { value: T; children?: Children },
+      { value, children }: { value: T; children?: Child[] },
       contexts: Contexts,
     ) {
       if (contexts[ctx.id] !== value) {
@@ -51,11 +55,11 @@ export const createContext = <T>(defaultValue: T) => {
         this.subs.forEach((instance) => scheduleUpdate(instance));
       }
 
-      return children;
+      return children ?? null;
     }
   }
 
-  ctx.Provider = Provider;
+  ctx.Provider = Provider as ComponentClass<{ value: T }>;
 
   return ctx;
 };

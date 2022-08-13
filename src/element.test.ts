@@ -41,14 +41,8 @@ describe("createElement", () => {
   it("nested", () => {
     expect(createElement("outer", {}, [createElement("inner")])).toEqual({
       type: "outer",
-      props: {
-        children: [
-          {
-            type: "inner",
-            props: {},
-          },
-        ],
-      },
+      props: {},
+      children: [{ type: "inner", props: {} }],
     });
   });
 });
@@ -57,14 +51,8 @@ describe("createTextElement", () => {
   it("works", () => {
     expect(createElement("outer", {}, ["inner"])).toEqual({
       type: "outer",
-      props: {
-        children: [
-          {
-            type: TEXT_ELEMENT,
-            props: { nodeValue: "inner" },
-          },
-        ],
-      },
+      props: {},
+      children: [{ type: TEXT_ELEMENT, props: { nodeValue: "inner" } }],
     });
   });
 });
@@ -78,12 +66,11 @@ describe("Fragment", () => {
       ]),
     ).toEqual({
       type: Fragment,
-      props: {
-        children: [
-          { type: "a", props: {} },
-          { type: "b", props: {} },
-        ],
-      },
+      props: {},
+      children: [
+        { type: "a", props: {} },
+        { type: "b", props: {} },
+      ],
     });
   });
 });

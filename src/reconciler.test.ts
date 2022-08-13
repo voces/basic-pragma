@@ -136,7 +136,8 @@ describe("reconcile", () => {
         },
         vnode: {
           type: Fragment,
-          props: { children: [aVNode, bVNode] },
+          props: {},
+          children: [aVNode, bVNode],
         },
       });
     });
