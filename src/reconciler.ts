@@ -245,15 +245,14 @@ const isClass = <P>(constructor: ComponentType<P>) => {
 
 function createComponent<T, S, P>(
   vnode: VNode<P>,
-  internalInstance: Instance<T, P>,
+  instance: Instance<T, P>,
   contexts: Contexts,
 ): ClassComponent<P, S, T> {
   const { type: ComponentType, props } = vnode;
   let constructor;
   if (typeof ComponentType === "string") {
-    throw "Tried createPublicInstance() with string";
+    throw "Tried to createComponent() with string";
   } else if (isClass(ComponentType)) {
-    // ComponentType.prototype && "render" in ComponentType.prototype)
     constructor = ComponentType as ComponentClass<P, S, T>;
   } else {
     const renderFunc = ComponentType as FunctionalComponentType<P>;
@@ -265,7 +264,7 @@ function createComponent<T, S, P>(
       // components being ClassComponent
       constructor = class extends ClassComponent<P, S, T> {
         // get displayName() {
-        // 	return renderFunc.name;
+        //   return renderFunc.name;
         // }
         render(props: P, contexts: Contexts) {
           return renderFunc(props, contexts);
@@ -275,19 +274,9 @@ function createComponent<T, S, P>(
     }
   }
 
-  const component = new constructor({
-    ...props,
-    children: vnode.children,
-  });
+  const component = new constructor({ ...props, children: vnode.children });
   component.contexts = contexts;
-  component.instance = internalInstance;
-
-  // if ("context" in constructor) {
-  //   contexts = {
-  //     ...contexts, // deno-lint-ignore no-explicit-any
-  //     [constructor.context!.id]: component as any,
-  //   };
-  // }
+  component.instance = instance;
 
   return component;
 }

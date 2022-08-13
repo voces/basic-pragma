@@ -17,21 +17,21 @@ setAdapter(testAdapter);
 
 describe("state", () => {
   it("works", () => {
-    const component = setupComponent({});
-    const publicInstance = component.component;
+    const instance = setupComponent({});
+    const component = instance.component;
 
-    expect(publicInstance).toBeTruthy();
-    expect(publicInstance?.state).toEqual({ foo: "bar" });
-    expect(component.childInstances[0]!.hostFrame!.props).toEqual({
+    expect(component).toBeTruthy();
+    expect(component?.state).toEqual({ foo: "bar" });
+    expect(instance.childInstances[0]!.hostFrame!.props).toEqual({
       foo: "bar",
       innerFrame: true,
     });
 
-    publicInstance?.setState({ foo: "baz" });
+    component?.setState({ foo: "baz" });
     jest.runAllTimers();
 
-    expect(publicInstance?.state).toEqual({ foo: "baz" });
-    expect(component.childInstances[0]!.hostFrame!.props).toEqual({
+    expect(component?.state).toEqual({ foo: "baz" });
+    expect(instance.childInstances[0]!.hostFrame!.props).toEqual({
       foo: "baz",
       innerFrame: true,
     });
