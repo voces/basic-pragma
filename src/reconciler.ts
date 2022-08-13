@@ -8,14 +8,15 @@ import {
 import { Child, Children, isChild, processChildren, VNode } from "./element";
 import { isLua } from "./common";
 import { compact } from "./utils/arrays";
+import { Context } from "./createContext";
 
 export const hooks = {
-  // deno-lint-ignore no-unused-vars no-explicit-any
-  beforeRender: (instance: ClassComponent<any>): void => {
+  // deno-lint-ignore no-unused-vars
+  beforeRender: <T>(instance: ClassComponent<T>): void => {
     /* do nothing */
   },
-  // deno-lint-ignore no-unused-vars no-explicit-any
-  beforeUnmount: (instance: ClassComponent<any>): void => {
+  // deno-lint-ignore no-unused-vars
+  beforeUnmount: <T>(instance: ClassComponent<T>): void => {
     /* do nothing */
   },
 };
@@ -26,8 +27,7 @@ export const hooks = {
 export interface Instance<T, P> {
   // FunctionComponents are dynamically converted into ClassComponents
   component?: ClassComponent<P> | undefined;
-  // deno-lint-ignore no-explicit-any
-  childInstances: Array<Instance<T, any>>;
+  childInstances: Instance<T, unknown>[];
   hostFrame?: T;
   vnode: VNode<P>;
 }
@@ -45,16 +45,19 @@ export function reconcile<T, InstanceProps>(
   parentFrame: T | undefined,
   instance: Instance<T, InstanceProps> | null,
   vnode: null,
+  contexts?: Contexts,
 ): null;
 export function reconcile<T, VNodeProps, InstanceProps>(
   parentFrame: T | undefined,
   instance: Instance<T, InstanceProps> | null,
   vnode: VNode<VNodeProps>,
+  contexts?: Contexts,
 ): Instance<T, VNodeProps>;
 export function reconcile<T, VNodeProps, instanceProps>(
   parentFrame: T | undefined,
   instance: Instance<T, instanceProps> | null,
   vnode: VNode<VNodeProps> | null,
+  contexts: Contexts = instance?.component?.contexts ?? {},
 ): Instance<T, VNodeProps> | null {
   try {
     if (!instance) {
@@ -63,14 +66,14 @@ export function reconcile<T, VNodeProps, instanceProps>(
       if (!vnode) return null;
 
       // Create instance
-      return instantiate(vnode, parentFrame);
+      return instantiate(vnode, parentFrame, contexts);
     } else if (!vnode) {
       // Remove instance
       cleanupFrames(instance);
       return null;
     } else if (instance.vnode.type !== vnode.type) {
       // Replace instance
-      const newInstance = instantiate(vnode, parentFrame);
+      const newInstance = instantiate(vnode, parentFrame, contexts);
       cleanupFrames(instance);
       return newInstance;
     } else {
@@ -89,7 +92,8 @@ export function reconcile<T, VNodeProps, instanceProps>(
 
         instanceOfSameType.childInstances = reconcileChildren(
           instanceOfSameType,
-          vnode,
+          contexts,
+          vnode.props.children ?? [],
         );
 
         // vnode for a compositional frame (class/functional component)
@@ -104,7 +108,10 @@ export function reconcile<T, VNodeProps, instanceProps>(
           throw err;
         }
 
-        const rendered = instanceOfSameType.component.render(vnode.props);
+        const rendered = instanceOfSameType.component.render(
+          vnode.props,
+          contexts,
+        );
 
         const children = isChild(rendered)
           ? rendered ? [rendered] : []
@@ -112,7 +119,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 
         instanceOfSameType.childInstances = reconcileChildren(
           instanceOfSameType,
-          vnode,
+          contexts,
           children,
         );
       }
@@ -127,8 +134,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
   }
 }
 
-// deno-lint-ignore no-explicit-any
-function cleanupFrames<T>(instance: Instance<T, any>) {
+function cleanupFrames<T, P>(instance: Instance<T, P>) {
   if (instance.component) hooks.beforeUnmount(instance.component);
 
   if (instance.childInstances) {
@@ -141,21 +147,25 @@ function cleanupFrames<T>(instance: Instance<T, any>) {
 }
 
 function reconcileChildren<T, P>(
-  // deno-lint-ignore no-explicit-any
-  instance: Instance<T, any>,
-  vnode: VNode<P>,
-  children = vnode.props.children,
+  instance: Instance<T, P>,
+  contexts: Contexts,
+  children: Children,
 ) {
   const hostFrame = instance.hostFrame;
   const childInstances = instance.childInstances;
   const nextChildElements = processChildren(children || []);
-  const newChildInstances = [];
+  const newChildInstances: Instance<T, unknown>[] = [];
   const count = Math.max(childInstances.length, nextChildElements.length);
   // TODO: add support for keys
   for (let i = 0; i < count; i++) {
     const childInstance = childInstances[i];
     const childElement = nextChildElements[i];
-    const newChildInstance = reconcile(hostFrame, childInstance, childElement);
+    const newChildInstance = reconcile(
+      hostFrame,
+      childInstance,
+      childElement,
+      contexts,
+    );
     if (newChildInstance != null) newChildInstances.push(newChildInstance);
   }
   return newChildInstances;
@@ -164,6 +174,7 @@ function reconcileChildren<T, P>(
 function instantiate<T, P>(
   vnode: VNode<P>,
   parentFrame: T | undefined,
+  contexts: Contexts,
 ): Instance<T, P> {
   const { type, props } = vnode;
 
@@ -172,7 +183,7 @@ function instantiate<T, P>(
     const frame = (adapter as Adapter<T>).createFrame(type, parentFrame, props);
     const childElements = processChildren(props.children || []);
     const childInstances = childElements.map((child) =>
-      instantiate(child, frame)
+      instantiate(child, frame, contexts)
     );
     return {
       hostFrame: frame,
@@ -182,7 +193,7 @@ function instantiate<T, P>(
   } else {
     // Instantiate component vnode
     const instance = { vnode } as Instance<T, P>;
-    instance.component = createPublicInstance(vnode, instance);
+    instance.component = createPublicInstance(vnode, instance, contexts);
 
     try {
       hooks.beforeRender(instance.component);
@@ -190,15 +201,12 @@ function instantiate<T, P>(
       print(err);
     }
 
-    const rendered = instance.component.render(props) ?? [];
+    const rendered = instance.component.render(props, contexts) ?? [];
     const childElements = isChild(rendered) ? [rendered] : rendered;
 
     instance.childInstances = compact(childElements)
-      .filter(
-        // deno-lint-ignore no-explicit-any
-        (child): child is VNode<any> => typeof child === "object",
-      )
-      .map((child) => instantiate(child, parentFrame));
+      .filter((child): child is VNode<unknown> => typeof child === "object")
+      .map((child) => instantiate(child, parentFrame, contexts));
 
     return instance;
   }
@@ -208,11 +216,10 @@ const functionalComponentClasses = new WeakMap<
   // deno-lint-ignore no-explicit-any
   FunctionalComponentType<any>,
   // deno-lint-ignore no-explicit-any
-  new (props: any) => ClassComponent<any>
+  ComponentClass<any>
 >();
 
-// deno-lint-ignore no-explicit-any
-const isClass = (constructor: ComponentType<any>) => {
+const isClass = <P>(constructor: ComponentType<P>) => {
   if (isLua) return typeof constructor !== "function";
   else return "prototype" in constructor;
 };
@@ -220,6 +227,7 @@ const isClass = (constructor: ComponentType<any>) => {
 function createPublicInstance<T, S, P>(
   vnode: VNode<P>,
   internalInstance: Instance<T, P>,
+  contexts: Contexts,
 ): ClassComponent<P, S, T> {
   const { type: ComponentType, props } = vnode;
   let constructor;
@@ -227,12 +235,12 @@ function createPublicInstance<T, S, P>(
     throw "Tried createPublicInstance() with string";
   } else if (isClass(ComponentType)) {
     // ComponentType.prototype && "render" in ComponentType.prototype)
-    constructor = ComponentType as new (props: P) => ClassComponent<P, S, T>;
+    constructor = ComponentType as ComponentClass<P, S, T>;
   } else {
     const renderFunc = ComponentType as FunctionalComponentType<P>;
     const existingClass = functionalComponentClasses.get(renderFunc);
     if (existingClass) {
-      constructor = existingClass as new (props: P) => ClassComponent<P, S, T>;
+      constructor = existingClass as ComponentClass<P, S, T>;
     } else {
       // Wrap the dynamic class in an object to avoid all functional
       // components being ClassComponent
@@ -240,15 +248,20 @@ function createPublicInstance<T, S, P>(
         // get displayName() {
         // 	return renderFunc.name;
         // }
-        render(props: P) {
-          return renderFunc(props);
+        render(props: P, contexts: Contexts) {
+          return renderFunc(props, contexts);
         }
       };
       functionalComponentClasses.set(renderFunc, constructor);
     }
   }
 
+  if ("context" in constructor) {
+    contexts = { ...contexts, [constructor.context!.id]: constructor.context };
+  }
+
   const publicInstance = new constructor(props);
+  publicInstance.contexts = contexts;
   publicInstance.instance = internalInstance;
   return publicInstance;
 }
@@ -261,15 +274,22 @@ const instanceMap = new WeakMap<
 >();
 
 const scheduledUpdates = new Set<Instance<unknown, unknown>>();
-const scheduleUpdate = <T>(instance: Instance<T, unknown>) => {
+export const scheduleUpdate = <T>(instance: Instance<T, unknown>) => {
   scheduledUpdates.add(instance);
   adapter.scheduleUpdate();
 };
 
+export type Contexts = { [contextId: number]: unknown };
+
 export abstract class ClassComponent<P, S = unknown, T = unknown> {
+  declare static context?: Context<unknown>;
+
   state = {} as S;
+  contexts: Contexts = {};
 
   constructor(public props: P) {}
+
+  componentWillUnmount() {}
 
   setState(partialState: Partial<S>): void {
     this.state = { ...this.state, ...partialState };
@@ -281,8 +301,21 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
     instanceMap.set(this, instance);
   }
 
-  abstract render(props: P): Children | Child;
+  abstract render(props: P, contexts: Contexts): Children | Child;
 }
+
+export type ComponentClass<
+  P = unknown,
+  S = unknown,
+  T = unknown,
+  C = unknown,
+> = {
+  new (
+    props: P & { children?: Children; key?: string | number },
+  ): ClassComponent<P, S, T>;
+
+  context?: Context<C>;
+};
 
 function updateInstance<T>(internalInstance: Instance<T, unknown>) {
   const vnode = internalInstance.vnode;

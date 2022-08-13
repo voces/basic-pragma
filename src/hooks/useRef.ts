@@ -23,6 +23,5 @@ export const useRef = <T>(initial: T): { current: T } => {
     throw `Expected a ref hook at index ${index}, got ${state.type}`;
   }
 
-  // deno-lint-ignore no-explicit-any
-  return (state as any) as { current: T };
+  return state;
 };

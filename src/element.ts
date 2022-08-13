@@ -41,20 +41,7 @@ export type EmptyObject = typeof EMPTY_OBJECT;
 
 export function createElement<P>(
   type: string | ComponentType<P>,
-  // deno-lint-ignore no-explicit-any
-  props: P & { key?: string | number; children?: VNode<any>[] },
-  ...children: Children
-): VNode<P>;
-export function createElement(
-  type: string | ComponentType<typeof EMPTY_OBJECT>,
-  // deno-lint-ignore no-explicit-any
-  props?: { key?: string | number; children?: VNode<any>[] },
-  ...children: Children
-): VNode<typeof EMPTY_OBJECT>;
-export function createElement<P>(
-  type: string | ComponentType<P>,
-  // deno-lint-ignore no-explicit-any
-  props: P & { key?: string | number; children?: VNode<any>[] },
+  props?: P & { key?: string | number; children?: VNode<unknown>[] },
   ...children: Children
 ): VNode<P> {
   const { key = null, ...rest } = { ...props };

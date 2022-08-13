@@ -11,7 +11,7 @@
     "dev": "tsc --project tsconfig.build.json --watch",
     "prepublishOnly": "rm -rf dist & npm run build",
     "lint": "deno fmt . --ignore=package.json,package-lock.json",
-    "test-lint": "deno lint . --ignore=node_modules/*",
+    "test-lint": "deno lint . --ignore=node_modules,dist",
     "test": "jest"
   },
   "keywords": [

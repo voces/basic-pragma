@@ -1,71 +1,61 @@
-import type { Children } from "./element";
-import { useRef } from "./hooks/useRef";
+/** @noSelfInFile **/
+
+import { FunctionalComponent } from "./Component";
+import type { Children, VNode } from "./element";
+import {
+  ClassComponent,
+  ComponentClass,
+  Contexts,
+  Instance,
+  scheduleUpdate,
+} from "./reconciler";
 
 export let i = 0;
 
+export type Context<T = unknown> = {
+  id: number;
+  Consumer: FunctionalComponent<{ children: (value: T) => VNode<unknown> }>;
+  Provider: ComponentClass<{ value: T }>;
+  defaultValue: T;
+};
+
 export const createContext = <T>(defaultValue: T) => {
-  const contextId = "__cC" + i++;
+  const ctx = {
+    id: i++,
+    Consumer: (props, contexts) => props.children(contexts[ctx.id] as T),
+    defaultValue,
+  } as Context<T>;
 
-  const context = {
-    _id: contextId,
-    _defaultValue: defaultValue,
+  class Provider extends ClassComponent<{ value: T }> {
+    static context = ctx;
+    subs = new Set<Instance<unknown, unknown>>();
 
-    Consumer: (
-      props: { children: (contextValue: T) => Children },
-      contextValue: T,
-    ) => props.children(contextValue),
-
-    Provider: (props: { value: T; children: Children }) => {
-      const data = useRef<{ getChildContext?: unknown }>({}).current;
-
-      if (!data.getChildContext) {
-        let subs = [];
-        let ctx: Record<string, typeof data> = {};
-        ctx[contextId] = data;
-
-        data.getChildContext = () => ctx;
-
-        // this.shouldComponentUpdate = function (_props) {
-        //   if (this.props.value !== _props.value) {
-        //     // I think the forced value propagation here was only needed when `options.debounceRendering` was being bypassed:
-        //     // https://github.com/preactjs/preact/commit/4d339fb803bea09e9f198abf38ca1bf8ea4b7771#diff-54682ce380935a717e41b8bfc54737f6R358
-        //     // In those cases though, even with the value corrected, we're double-rendering all nodes.
-        //     // It might be better to just tell folks not to use force-sync mode.
-        //     // Currently, using `useContext()` in a class component will overwrite its `this.context` value.
-        //     // subs.some(c => {
-        //     // 	c.context = _props.value;
-        //     // 	enqueueRender(c);
-        //     // });
-
-        //     // subs.some(c => {
-        //     // 	c.context[contextId] = _props.value;
-        //     // 	enqueueRender(c);
-        //     // });
-        //     subs.some(enqueueRender);
-        //   }
-        // };
-
-        data.sub = (c) => {
-          subs.push(c);
-          let old = c.componentWillUnmount;
-          c.componentWillUnmount = () => {
-            subs.splice(subs.indexOf(c), 1);
-            if (old) old.call(c);
-          };
+    sub(instance: Instance<unknown, unknown>) {
+      this.subs.add(instance);
+      if (instance.component) {
+        const oldComponentWillUnmount = instance.component.componentWillUnmount;
+        instance.component.componentWillUnmount = () => {
+          this.subs.delete(instance);
+          instance.component!.componentWillUnmount = oldComponentWillUnmount;
+          oldComponentWillUnmount();
         };
       }
+    }
 
-      return props.children;
-    },
-  };
+    render(
+      { value, children }: { value: T; children?: Children },
+      contexts: Contexts,
+    ) {
+      if (contexts[ctx.id] !== value) {
+        contexts[ctx.id] = value;
+        this.subs.forEach((instance) => scheduleUpdate(instance));
+      }
 
-  // Devtools needs access to the context object when it
-  // encounters a Provider. This is necessary to support
-  // setting `displayName` on the context object instead
-  // of on the component itself. See:
-  // https://reactjs.org/docs/context.html#contextdisplayname
+      return children;
+    }
+  }
 
-  return (context.Provider._contextRef =
-    context.Consumer.contextType =
-      context);
+  ctx.Provider = Provider;
+
+  return ctx;
 };

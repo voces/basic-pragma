@@ -11,7 +11,8 @@ interface HookContext {
 export const hookContext = {} as HookContext;
 
 export const hookMap = new WeakMap<
-  ClassComponent<unknown>,
+  // deno-lint-ignore no-explicit-any
+  ClassComponent<any>,
   // deno-lint-ignore no-explicit-any
   HookState<any, unknown>[]
 >();

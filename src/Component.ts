@@ -1,14 +1,13 @@
 /** @noSelfInFile **/
 
-import { Child, Children } from "./element";
-import { ClassComponent } from "./reconciler";
+import type { Child, Children } from "./element";
+import type { ComponentClass, Contexts } from "./reconciler";
 
 export type FunctionalComponent<P> = (
   props: P & { children?: Children; key?: string | number },
+  contexts: Contexts,
 ) => Children | Child;
 
 export type ComponentType<P> =
-  | (new (
-    props: P & { children?: Children; key?: string | number },
-  ) => ClassComponent<P>)
+  | ComponentClass<P>
   | FunctionalComponent<P>;

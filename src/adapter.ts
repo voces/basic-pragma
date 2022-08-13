@@ -1,7 +1,6 @@
 /** @noSelfInFile **/
 
-// deno-lint-ignore no-explicit-any
-export type Adapter<T = any, P = any> = {
+export type Adapter<T = unknown, P = unknown> = {
   createFrame: (jsxType: string, parentFrame: T | undefined, props: P) => T;
   cleanupFrame: (frame: T) => void;
   updateFrameProperties: (frame: T, prevProps: P, nextProps: P) => void;
@@ -39,7 +38,8 @@ const internalAdapter: Adapter = {
 
 export const adapter = internalAdapter;
 
-export const setAdapter = (adapter: Partial<Adapter>): void => {
+// deno-lint-ignore no-explicit-any
+export const setAdapter = (adapter: Partial<Adapter<any, any>>): void => {
   // We do this just to ensure we set all methods on internalAdapter
   internalAdapter.createFrame = adapter.createFrame ?? baseCreateFrame;
   internalAdapter.cleanupFrame = adapter.cleanupFrame ?? baseCleanupFrame;

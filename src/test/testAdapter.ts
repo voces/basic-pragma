@@ -1,3 +1,4 @@
+import { Adapter } from "../adapter";
 import { EmptyObject } from "../element";
 import { flushUpdates } from "../reconciler";
 
@@ -47,7 +48,7 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 
 let waiting = false;
 
-export const testAdapter = {
+export const testAdapter: Adapter<TestFrame, Record<string, unknown>> = {
   createFrame: <P extends Record<string, unknown>>(
     jsxType: string,
     parentFrame: TestFrame<P> | undefined,
