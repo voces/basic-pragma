@@ -84,8 +84,10 @@ export function reconcile<T, VNodeProps, instanceProps>(
       return newInstance;
     } else {
       // This assumes .type equality => Prop type equality
-      // deno-lint-ignore no-explicit-any
-      const instanceOfSameType = (instance as any) as Instance<T, VNodeProps>;
+      const instanceOfSameType = instance as Instance<T, unknown> as Instance<
+        T,
+        VNodeProps
+      >;
 
       // vnode for a host frame
       if (typeof vnode.type === "string") {
@@ -105,6 +107,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
         // vnode for a compositional frame (class/functional component)
       } else if (instanceOfSameType.component) {
         instanceOfSameType.component.props = vnode.props;
+        contexts = updateContexts(contexts, instanceOfSameType.component!);
 
         try {
           hooks.beforeRender(instanceOfSameType.component);
@@ -148,6 +151,21 @@ function cleanupFrames<T, P>(instance: Instance<T, P>) {
   if (instance.hostFrame) adapter.cleanupFrame(instance.hostFrame);
 }
 
+const updateContexts = (
+  contexts: Contexts,
+  // deno-lint-ignore no-explicit-any
+  component: ClassComponent<any>,
+) => {
+  if ("context" in component.constructor) {
+    const context = (component.constructor as ComponentClass).context!;
+    contexts = {
+      ...contexts,
+      [context.id]: component as InstanceType<Context<unknown>["Provider"]>,
+    };
+  }
+  return contexts;
+};
+
 function reconcileChildren<T, P>(
   instance: Instance<T, P>,
   contexts: Contexts,
@@ -161,6 +179,8 @@ function reconcileChildren<T, P>(
   for (let i = 0; i < count; i++) {
     const childInstance = childInstances[i];
     const childElement = children[i];
+    // if (childInstance.component && "context" in childInstance.component)
+    //   contexts[childInstance.component.context.id] =
     const newChildInstance = reconcile(
       hostFrame,
       childInstance,
@@ -197,7 +217,8 @@ function instantiate<T, P>(
   } else {
     // Instantiate component vnode
     const instance = { vnode } as Instance<T, P>;
-    instance.component = createPublicInstance(vnode, instance, contexts);
+    instance.component = createComponent(vnode, instance, contexts);
+    contexts = updateContexts(contexts, instance.component);
 
     try {
       hooks.beforeRender(instance.component);
@@ -232,7 +253,7 @@ const isClass = <P>(constructor: ComponentType<P>) => {
   else return "prototype" in constructor;
 };
 
-function createPublicInstance<T, S, P>(
+function createComponent<T, S, P>(
   vnode: VNode<P>,
   internalInstance: Instance<T, P>,
   contexts: Contexts,
@@ -264,20 +285,21 @@ function createPublicInstance<T, S, P>(
     }
   }
 
-  if ("context" in constructor) {
-    contexts = {
-      ...contexts,
-      [constructor.context!.id]: constructor.context?.defaultValue,
-    };
-  }
-
-  const publicInstance = new constructor({
+  const component = new constructor({
     ...props,
     children: vnode.children,
   });
-  publicInstance.contexts = contexts;
-  publicInstance.instance = internalInstance;
-  return publicInstance;
+  component.contexts = contexts;
+  component.instance = internalInstance;
+
+  // if ("context" in constructor) {
+  //   contexts = {
+  //     ...contexts, // deno-lint-ignore no-explicit-any
+  //     [constructor.context!.id]: component as any,
+  //   };
+  // }
+
+  return component;
 }
 
 const instanceMap = new WeakMap<
@@ -293,7 +315,12 @@ export const scheduleUpdate = <T>(instance: Instance<T, unknown>) => {
   adapter.scheduleUpdate();
 };
 
-export type Contexts = { [contextId: number]: unknown | undefined };
+export type Contexts = {
+  [contextId: number]:
+    // deno-lint-ignore no-explicit-any
+    | InstanceType<Context<any>["Provider"]>
+    | undefined;
+};
 
 export abstract class ClassComponent<P, S = unknown, T = unknown> {
   // deno-lint-ignore no-explicit-any
@@ -316,6 +343,10 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
     instanceMap.set(this, instance);
   }
 
+  get instance() {
+    return instanceMap.get(this)!;
+  }
+
   abstract render(
     props: P & { children: Child[] | undefined },
     contexts: Contexts,
@@ -326,10 +357,11 @@ export type ComponentClass<
   P = unknown,
   S = unknown,
   T = unknown,
+  E = unknown,
 > = {
   new (
     props: P & { children?: Child[]; key?: string | number },
-  ): ClassComponent<P, S, T>;
+  ): ClassComponent<P, S, T> & E;
 
   context?: Context<unknown>;
 };

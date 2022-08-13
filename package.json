@@ -9,8 +9,9 @@
   "scripts": {
     "build": "tsc --project tsconfig.build.json",
     "dev": "tsc --project tsconfig.build.json --watch",
-    "prepublishOnly": "rm -rf dist & npm run build",
     "lint": "deno fmt . --ignore=package.json,package-lock.json",
+    "prepublishOnly": "rm -rf dist & npm run build",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "test-lint": "deno lint . --ignore=node_modules,dist",
     "test": "jest"
   },

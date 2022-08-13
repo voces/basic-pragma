@@ -4,29 +4,22 @@ import { ComponentType } from "./Component";
 import { TEXT_ELEMENT } from "./common";
 import { compact, getLength } from "./utils/arrays";
 
-export interface VNode<P> {
+// deno-lint-ignore no-explicit-any
+export interface VNode<P = any> {
   type: string | ComponentType<P>;
   props: P;
   key?: string | number;
   children: VNode<unknown>[] | undefined;
 }
 
-// deno-lint-ignore no-explicit-any
-export type Child = VNode<any> | string | boolean | null | undefined;
+export type Child = VNode | string | boolean | null | undefined;
 
 export type Children = Child[] | Children[];
 
-const isChild = (obj: Children | Child): obj is Child =>
-  (typeof obj === "object" && obj != null && "type" in obj && "props" in obj) ||
-  typeof obj === "boolean" ||
-  typeof obj === "string";
+type RenderableChildElement = VNode | string;
 
-// deno-lint-ignore no-explicit-any
-type RenderableChildElement = VNode<any> | string;
-
-// deno-lint-ignore no-explicit-any
-export const processChildren = (children: Children | Child): VNode<any>[] =>
-  compact((isChild(children) ? [children] : children).flat(10) as Child[])
+export const processChildren = (children: Children | Child): VNode[] =>
+  compact((Array.isArray(children) ? children : [children]).flat(10) as Child[])
     .filter(
       (c): c is RenderableChildElement =>
         typeof c !== "boolean" &&
@@ -51,7 +44,7 @@ export const createElement = <P, T extends string | ComponentType<P>>(
       type: string,
       // These props refer to frame props, which should be set on JSX.Intrinsic
       props?: Props<Record<string, unknown>>,
-      ...childrne: Children,
+      ...children: Children,
     ]
     : keyof Omit<P, "key" | "children"> extends never ? [
         type: string | ComponentType<P>,
