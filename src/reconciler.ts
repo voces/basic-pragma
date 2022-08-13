@@ -9,13 +9,6 @@ import { Child, Children, processChildren, VNode } from "./element";
 import { isLua } from "./common";
 import { Context } from "./createContext";
 
-declare global {
-  // deno-lint-ignore no-var
-  var print: typeof console.log;
-}
-
-globalThis.print = globalThis.print ?? console.log;
-
 export const hooks = {
   // deno-lint-ignore no-unused-vars
   beforeRender: <T>(instance: ClassComponent<T>): void => {
@@ -112,7 +105,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
         try {
           hooks.beforeRender(instanceOfSameType.component);
         } catch (err) {
-          print(err);
+          console.error(err);
           cleanupFrames(instance);
           throw err;
         }
@@ -133,8 +126,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
       return instanceOfSameType;
     }
   } catch (err) {
-    // TODO: log this error, but in a JavaScript/Lua general way...
-    print(err);
+    console.error(err);
     return null;
   }
 }
@@ -223,7 +215,7 @@ function instantiate<T, P>(
     try {
       hooks.beforeRender(instance.component);
     } catch (err) {
-      print(err);
+      console.error(err);
     }
 
     const children = processChildren(
