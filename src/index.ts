@@ -13,6 +13,8 @@ export { useContext } from "./hooks/useContext";
 
 declare global {
   namespace JSX {
+    interface IntrinsicElements {}
+
     interface ElementAttributesProperty {
       props: unknown;
     }
