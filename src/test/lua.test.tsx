@@ -59,10 +59,12 @@ return createElement('frame', props, 'myText', createElement('frame'))`);
 
   expect(obj).toEqual({
     type: "frame",
-    props: { foo: "bar" },
-    children: {
-      1: { type: "TEXT ELEMENT", props: { nodeValue: "myText" } },
-      2: { type: "frame", props: {} },
+    props: {
+      foo: "bar",
+      children: {
+        1: "myText",
+        2: { type: "frame", props: {} },
+      },
     },
   });
 });
@@ -88,10 +90,42 @@ export = foo;`,
 
   expect(obj).toEqual({
     type: "frame",
-    props: { foo: "bar" },
-    children: {
-      1: { type: "TEXT ELEMENT", props: { nodeValue: "myText" } },
-      2: { type: "frame", props: {} },
+    props: {
+      foo: "bar",
+      children: {
+        1: "myText",
+        2: { type: "frame", props: {} },
+      },
+    },
+  });
+});
+
+// Not possible to mark file as JSX with "transpileString"
+it.skip("works with jsx", () => {
+  const ret = tstl.transpileString(
+    `import { createElement } from "dist/index";
+
+const foo = <frame foo="bar">
+    {"myText"}
+    <frame/>
+  </frame>
+
+export = foo;`,
+    { noImplicitSelf: true },
+  );
+
+  expect(ret.file?.lua).not.toBeUndefined();
+
+  const obj = runLua(ret.file!.lua!);
+
+  expect(obj).toEqual({
+    type: "frame",
+    props: {
+      foo: "bar",
+      children: {
+        1: "myText",
+        2: { type: "frame", props: {} },
+      },
     },
   });
 });
