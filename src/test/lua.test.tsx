@@ -1,6 +1,7 @@
 import { inspect } from "util";
 import { lauxlib, lua, lualib, to_luastring } from "fengari";
 import * as tstl from "typescript-to-lua";
+import { JsxEmit } from "typescript";
 
 const absurd = (v: never) => {
   throw `Unexpected ${inspect(v, false, 2, true)}`;
@@ -101,9 +102,10 @@ export = foo;`,
 });
 
 // Not possible to mark file as JSX with "transpileString"
-it.skip("works with jsx", () => {
-  const ret = tstl.transpileString(
-    `import { createElement } from "dist/index";
+it("works with jsx", () => {
+  const ret = tstl.transpileVirtualProject({
+    "main.tsx": `/** @jsx createElement */
+import { createElement } from "dist/index";
 
 const foo = <frame foo="bar">
     {"myText"}
@@ -111,12 +113,12 @@ const foo = <frame foo="bar">
   </frame>
 
 export = foo;`,
-    { noImplicitSelf: true },
-  );
+  }, { noImplicitSelf: true, jsx: JsxEmit.React });
+  const lua = ret.transpiledFiles[1].lua;
 
-  expect(ret.file?.lua).not.toBeUndefined();
+  expect(lua).not.toBeUndefined();
 
-  const obj = runLua(ret.file!.lua!);
+  const obj = runLua(lua!);
 
   expect(obj).toEqual({
     type: "frame",
