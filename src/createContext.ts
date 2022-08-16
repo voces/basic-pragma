@@ -1,7 +1,7 @@
 /** @noSelfInFile **/
 
 import { FunctionComponent } from "./Component";
-import { Child, Children, NodeProps } from "./element";
+import { Child, Children, EmptyObject, NodeProps } from "./element";
 import {
   ClassComponent,
   ComponentClass,
@@ -17,7 +17,7 @@ export type Context<T> = {
   Provider:
     & ComponentClass<
       { value: T },
-      unknown,
+      EmptyObject,
       unknown,
       { sub: (instance: Instance<unknown, unknown>) => void }
     >

@@ -28,7 +28,8 @@ const baseScheduleUpdate: Adapter["scheduleUpdate"] = () => {
   throw "Adapter has not implemented scheduleUdate";
 };
 
-const internalAdapter: Adapter = {
+// deno-lint-ignore no-explicit-any
+const internalAdapter: Adapter<any, any> = {
   createFrame: baseCreateFrame,
   cleanupFrame: baseCleanupFrame,
   updateFrameProperties: baseUpdateFrameProperties,
@@ -38,8 +39,7 @@ const internalAdapter: Adapter = {
 
 export const adapter = internalAdapter;
 
-// deno-lint-ignore no-explicit-any
-export const setAdapter = (adapter: Partial<Adapter<any, any>>): void => {
+export const setAdapter = <T, P>(adapter: Partial<Adapter<T, P>>): void => {
   // We do this just to ensure we set all methods on internalAdapter
   internalAdapter.createFrame = adapter.createFrame ?? baseCreateFrame;
   internalAdapter.cleanupFrame = adapter.cleanupFrame ?? baseCleanupFrame;
