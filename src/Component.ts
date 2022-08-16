@@ -1,14 +1,13 @@
 /** @noSelfInFile **/
 
-import type { Child, Children } from "./element";
+import type { Children, EmptyObject, NodeProps } from "./element";
 import type { ComponentClass, Contexts } from "./reconciler";
 
-export type FunctionalComponent<P> = (
-  // TODO: Do rewriting on children similar to createElement
-  props: P & { children?: Child[]; key?: string | number },
+export type FunctionComponent<P = EmptyObject> = (
+  props: NodeProps<P>,
   contexts: Contexts,
-) => Children | Child;
+) => Children;
 
 export type ComponentType<P> =
   | ComponentClass<P>
-  | FunctionalComponent<P>;
+  | FunctionComponent<P>;

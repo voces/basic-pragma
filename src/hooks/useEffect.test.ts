@@ -1,7 +1,7 @@
 import { setAdapter } from "../adapter";
 import { createElement } from "../element";
 import { reconcile, render } from "../reconciler";
-import { testAdapter, TestFrame } from "../test/testAdapter";
+import { testAdapter, TestFrame } from "../test/util/testAdapter";
 import { useEffect } from "./useEffect";
 import { useForceUpdate, useState } from "./useState";
 
@@ -11,10 +11,10 @@ it("invokes effect on mount", () => {
   const fn = jest.fn();
   const TestComponent = () => {
     useEffect(fn);
-    return createElement("frame");
+    return createElement("frame", null);
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
 
   expect(fn).toHaveBeenCalledTimes(1);
 });
@@ -25,10 +25,10 @@ it("invokes effect only once", () => {
   const TestComponent = () => {
     rerender = useForceUpdate();
     useEffect(fn);
-    return createElement("frame");
+    return createElement("frame", null);
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
 
   expect(fn).toHaveBeenCalledTimes(1);
 
@@ -44,10 +44,10 @@ it("invokes effect if args change", () => {
     const [state, setState] = useState(0);
     inc = () => setState((s) => s + 1);
     useEffect(fn, [state]);
-    return createElement("frame");
+    return createElement("frame", null);
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
 
   expect(fn).toHaveBeenCalledTimes(1);
 
@@ -65,10 +65,10 @@ it("cleans up on each invocation", () => {
     const [state, setState] = useState(0);
     inc = () => setState((s) => s + 1);
     useEffect(fn, [state]);
-    return createElement("frame");
+    return createElement("frame", null);
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
 
   expect(fn).toHaveBeenCalledTimes(1);
   expect(clean).toHaveBeenCalledTimes(0);
@@ -85,10 +85,10 @@ it("cleans up on unmount", () => {
   const fn = jest.fn().mockImplementation(() => clean);
   const TestComponent = () => {
     useEffect(fn);
-    return createElement("frame");
+    return createElement("frame", null);
   };
   const root = new TestFrame();
-  const instance = reconcile(root, null, createElement(TestComponent));
+  const instance = reconcile(root, null, createElement(TestComponent, null));
 
   expect(fn).toHaveBeenCalledTimes(1);
   expect(clean).toHaveBeenCalledTimes(0);

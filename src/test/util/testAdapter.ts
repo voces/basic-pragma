@@ -1,28 +1,31 @@
-import { Adapter } from "../adapter";
-import { EmptyObject } from "../element";
-import { flushUpdates } from "../reconciler";
+import { Adapter } from "../../adapter";
+import { EmptyObject } from "../../element";
+import { flushUpdates } from "../../reconciler";
 
-export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
-  readonly type = "test-frame";
-  props: P;
+declare global {
+  namespace JSX {
+    interface IntrinsicElements {
+      // deno-lint-ignore no-explicit-any
+      frame: Record<string, any>;
+      // deno-lint-ignore no-explicit-any
+      foo: Record<string, any>;
+      // deno-lint-ignore no-explicit-any
+      bar: Record<string, any>;
+    }
+  }
+}
+
+export class TestFrame<P = Record<string, unknown>> {
+  props: Record<string, unknown>;
   children: TestFrame[] = [];
   parent?: TestFrame;
   readonly jsxType?: string;
-  disposed?: true;
+  declare disposed?: true;
 
   constructor(props?: EmptyObject, parent?: TestFrame, jsxType?: string);
   constructor(props: P, parent?: TestFrame, jsxType?: string);
   constructor(props?: P, parent?: TestFrame, jsxType?: string) {
-    // deno-lint-ignore no-this-alias
-    const frame = this;
-    this.props = Object.assign(
-      {
-        set ref(ref: { current: unknown }) {
-          ref.current = frame;
-        },
-      },
-      props,
-    );
+    this.props = { ...props };
     this.jsxType = jsxType;
 
     this.parent = parent;
@@ -48,9 +51,9 @@ export class TestFrame<P extends Record<string, unknown> = EmptyObject> {
 let waiting = false;
 
 export const testAdapter: Adapter<TestFrame, Record<string, unknown>> = {
-  createFrame: <P extends Record<string, unknown>>(
+  createFrame: <P = Record<string, unknown>>(
     jsxType: string,
-    parentFrame: TestFrame<P> | undefined,
+    parentFrame: TestFrame<unknown> | undefined,
     props: P,
   ): TestFrame<P> => new TestFrame(props, parentFrame, jsxType),
 

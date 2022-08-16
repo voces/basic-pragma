@@ -1,7 +1,7 @@
 /** @noSelfInFile **/
 
-import { FunctionalComponent } from "./Component";
-import type { Child, VNode } from "./element";
+import { FunctionComponent } from "./Component";
+import { Child, Children, NodeProps } from "./element";
 import {
   ClassComponent,
   ComponentClass,
@@ -13,7 +13,7 @@ export let i = 0;
 
 export type Context<T> = {
   id: number;
-  Consumer: FunctionalComponent<{ children: [(value: T) => VNode] }>;
+  Consumer: FunctionComponent<{ children: (value: T) => Children }>;
   Provider:
     & ComponentClass<
       { value: T },
@@ -29,7 +29,7 @@ export const createContext = <T>(defaultValue: T) => {
   const ctx = {
     id: i++,
     Consumer: (props, contexts) =>
-      props.children[0](
+      props.children(
         contexts[ctx.id]?.props.value as T | undefined ?? defaultValue,
       ),
     defaultValue,
@@ -40,7 +40,7 @@ export const createContext = <T>(defaultValue: T) => {
     subs = new Set<Instance<unknown, unknown>>();
     lastValue: T;
 
-    constructor(props: { value: T }) {
+    constructor(props: NodeProps<{ value: T }>) {
       super(props);
       this.lastValue = props.value;
     }
@@ -58,7 +58,7 @@ export const createContext = <T>(defaultValue: T) => {
       }
     }
 
-    render({ value, children }: { value: T; children?: Child[] }) {
+    render({ value, children }: { value: T; children?: Child | Child[] }) {
       if (value !== this.lastValue) {
         this.lastValue = value;
         this.subs.forEach((instance) => scheduleUpdate(instance));

@@ -1,20 +1,29 @@
 import { setAdapter } from "../adapter";
 import { createElement } from "../element";
 import { render } from "../reconciler";
-import { testAdapter, TestFrame } from "../test/testAdapter";
+import { testAdapter, TestFrame } from "../test/util/testAdapter";
 import { useRef } from "./useRef";
+import { useForceUpdate } from "./useState";
 
 setAdapter(testAdapter);
 
 it("works", () => {
-  let ref: { current: TestFrame | null };
+  const fn = jest.fn();
+  let rerender!: () => void;
+  let i = 0;
   const TestComponent = () => {
-    ref = useRef<TestFrame | null>(null);
+    rerender = useForceUpdate();
+    i++;
+    fn(useRef(i), i);
 
-    return createElement("frame", { ref });
+    return null;
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
+  rerender();
+  jest.runAllTimers();
 
-  expect(ref!).toEqual({ current: root.children[0] });
+  expect(fn).toHaveBeenCalledTimes(2);
+  expect(fn).toHaveBeenNthCalledWith(1, { current: 1 }, 1);
+  expect(fn).toHaveBeenNthCalledWith(2, { current: 1 }, 2);
 });

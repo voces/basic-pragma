@@ -5,6 +5,7 @@
     "lib": ["ESNext", "DOM"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "jsx": "react",
     "noImplicitThis": true,
     "outDir": "./dist/",
     "skipLibCheck": true,

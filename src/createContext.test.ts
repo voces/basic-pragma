@@ -1,9 +1,9 @@
 import { setAdapter } from "./adapter";
 import { createContext } from "./createContext";
-import { createElement, VNode } from "./element";
+import { Children, createElement } from "./element";
 import { useState } from "./hooks/useState";
 import { render } from "./reconciler";
-import { testAdapter, TestFrame } from "./test/testAdapter";
+import { testAdapter, TestFrame } from "./test/util/testAdapter";
 
 setAdapter(testAdapter);
 
@@ -11,7 +11,11 @@ it("no provider uses default value", () => {
   const { Consumer } = createContext("foo");
   const fn = jest.fn();
   render(
-    createElement(Consumer, undefined, (v) => fn(v)),
+    createElement(
+      Consumer,
+      {}, // TODO: null should be acceptable
+      (v) => fn(v),
+    ),
     new TestFrame(),
   );
 
@@ -25,7 +29,7 @@ it("use provider's value", () => {
     createElement(
       Provider,
       { value: "bar" },
-      createElement(Consumer, undefined, (v) => fn(v)),
+      createElement(Consumer, {}, (v) => fn(v)),
     ),
     new TestFrame(),
   );
@@ -41,9 +45,9 @@ it("use provider's value, even if deep", () => {
       Provider,
       { value: "bar" },
       createElement(
-        "moo",
-        undefined,
-        createElement(Consumer, undefined, (v) => fn(v)),
+        "frame",
+        {},
+        createElement(Consumer, {}, (v) => fn(v)),
       ),
     ),
     new TestFrame(),
@@ -59,11 +63,11 @@ it("use nearest provider", () => {
     createElement(
       Provider,
       { value: "bar" },
-      createElement(Consumer, undefined, (v) => fn(v)),
+      createElement(Consumer, {}, (v) => fn(v)),
       createElement(
         Provider,
         { value: "baz" },
-        createElement(Consumer, undefined, (v) => fn(v)),
+        createElement(Consumer, {}, (v) => fn(v)),
       ),
     ),
     new TestFrame(),
@@ -78,7 +82,8 @@ it("updates when value changes", () => {
   const fn = jest.fn();
   const { Consumer, Provider } = createContext("foo");
   let exposedSetState!: (nextState: string) => void;
-  const TestRoot = ({ children }: { children: VNode[] }) => {
+  // TODO: what about REQUIRED children?
+  const TestRoot = ({ children }: { children?: Children }) => {
     const [state, setState] = useState("bar");
     exposedSetState = setState;
     return createElement(Provider, { value: state }, children);
@@ -86,8 +91,8 @@ it("updates when value changes", () => {
   render(
     createElement(
       TestRoot,
-      undefined,
-      createElement(Consumer, undefined, (v) => fn(v)),
+      {},
+      createElement(Consumer, {}, (v) => fn(v)),
     ),
     new TestFrame(),
   );

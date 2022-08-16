@@ -3,11 +3,12 @@
 import { Adapter, adapter } from "./adapter";
 import {
   ComponentType,
-  FunctionalComponent as FunctionalComponentType,
+  FunctionComponent as FunctionalComponentType,
 } from "./Component";
-import { Child, Children, processChildren, VNode } from "./element";
-import { isLua } from "./common";
+import { Child, Children, NodeProps, VNode } from "./element";
+import { isLua, TEXT_ELEMENT } from "./common";
 import { Context } from "./createContext";
+import { getLength } from "./utils/arrays";
 
 export const hooks = {
   // deno-lint-ignore no-unused-vars
@@ -88,14 +89,14 @@ export function reconcile<T, VNodeProps, instanceProps>(
         // Update host vnode
         adapter.updateFrameProperties(
           instance.hostFrame,
-          { ...instance.vnode.props, children: instance.vnode.children },
-          { ...vnode.props, children: vnode.children },
+          instance.vnode.props,
+          vnode.props,
         );
 
         instanceOfSameType.childInstances = reconcileChildren(
           instanceOfSameType,
           contexts,
-          vnode.children ?? [],
+          vnode.props.children,
         );
 
         // vnode for a compositional frame (class/functional component)
@@ -111,10 +112,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
           throw err;
         }
 
-        const children = processChildren(component.render(
-          { ...vnode.props, children: vnode.children },
-          contexts,
-        ));
+        const children = component.render(vnode.props, contexts);
 
         instanceOfSameType.childInstances = reconcileChildren(
           instanceOfSameType,
@@ -159,23 +157,81 @@ const updateContexts = (
   return contexts;
 };
 
+const isRecord = (value: unknown): value is Record<string, unknown> =>
+  !!value && typeof value === "object";
+
+const isChild = (value: unknown): value is string | VNode<unknown> => {
+  if (typeof value === "string") return true;
+
+  if (!isRecord(value)) return false;
+
+  if (typeof value.type !== "string" && typeof value.type !== "function") {
+    return false;
+  }
+
+  if (!isRecord(value.props)) return false;
+
+  if ("children" in value.props) return true;
+
+  return false;
+};
+
+function* childIterator(children: unknown): Generator<VNode<unknown> | string> {
+  if (!Array.isArray(children)) {
+    if (isChild(children)) yield children;
+    return;
+  }
+
+  const length = getLength(children);
+  for (let i = 0; i < length; i++) {
+    const itr = childIterator(children[i]);
+    let cur = itr.next();
+    while (!cur.done) {
+      yield cur.value;
+      cur = itr.next();
+    }
+  }
+}
+
+const createTextElement = (nodeValue: string) => ({
+  type: TEXT_ELEMENT,
+  props: { nodeValue, children: [] as Child[] },
+} as VNode<unknown>);
+
+const childrenAsNodes = (children: unknown): VNode<unknown>[] => {
+  const arr: VNode<unknown>[] = [];
+
+  const itr = childIterator(children);
+  let cur = itr.next();
+  while (!cur.done) {
+    arr.push(
+      typeof cur.value === "string" ? createTextElement(cur.value) : cur.value,
+    );
+    cur = itr.next();
+  }
+
+  return arr;
+};
+
 function reconcileChildren<T, P>(
   instance: Instance<T, P>,
   contexts: Contexts,
-  children: VNode<unknown>[],
+  children: unknown,
 ) {
   const hostFrame = instance.hostFrame;
   const childInstances = instance.childInstances;
   const newChildInstances: Instance<T, unknown>[] = [];
-  const count = Math.max(childInstances.length, children.length);
+  const flatChildren = childrenAsNodes(children);
+
+  const count = Math.max(childInstances.length, flatChildren.length);
   // TODO: add support for keys
   for (let i = 0; i < count; i++) {
     const childInstance = childInstances[i];
-    const childElement = children[i];
+    const childNode = flatChildren[i];
     const newChildInstance = reconcile(
       hostFrame,
       childInstance,
-      childElement,
+      childNode,
       contexts,
     );
     if (newChildInstance != null) newChildInstances.push(newChildInstance);
@@ -192,12 +248,9 @@ function instantiate<T, P>(
 
   if (typeof type === "string") {
     // Instantiate host vnode
-    const frame = (adapter as Adapter<T>).createFrame(type, parentFrame, {
-      ...props,
-      children: vnode.children,
-    });
-    const childElements = processChildren(vnode.children || []);
-    const childInstances = childElements.map((child) =>
+    const frame = (adapter as Adapter<T>).createFrame(type, parentFrame, props);
+    const childNodes = childrenAsNodes(vnode.props.children);
+    const childInstances = childNodes.map((child) =>
       instantiate(child, frame, contexts)
     );
     return {
@@ -217,15 +270,11 @@ function instantiate<T, P>(
       console.error(err);
     }
 
-    const children = processChildren(
-      instance.component.render(
-        { ...props, children: vnode.children },
-        contexts,
-      ) ?? [],
+    const children = childrenAsNodes(
+      instance.component.render(props, contexts),
     );
 
     instance.childInstances = children
-      .filter((child): child is VNode<unknown> => typeof child === "object")
       .map((child) => instantiate(child, parentFrame, contexts));
 
     return instance;
@@ -267,15 +316,18 @@ function createComponent<T, S, P>(
         // get displayName() {
         //   return renderFunc.name;
         // }
-        render(props: P, contexts: Contexts) {
+        render(props: NodeProps<P>, contexts: Contexts) {
           return renderFunc(props, contexts);
         }
       };
-      functionalComponentClasses.set(renderFunc, constructor);
+      functionalComponentClasses.set(
+        renderFunc,
+        constructor as ComponentClass<P>,
+      );
     }
   }
 
-  const component = new constructor({ ...props, children: vnode.children });
+  const component = new constructor(props);
   component.contexts = contexts;
   component.instance = instance;
 
@@ -308,7 +360,7 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
   state = {} as S;
   contexts: Contexts = {};
 
-  constructor(public props: P) {}
+  constructor(public props: NodeProps<P>) {}
 
   componentWillUnmount() {}
 
@@ -326,10 +378,7 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
     return instanceMap.get(this)!;
   }
 
-  abstract render(
-    props: P & { children: Child[] | undefined },
-    contexts: Contexts,
-  ): Children | Child;
+  abstract render(props: NodeProps<P>, contexts: Contexts): Children;
 }
 
 export type ComponentClass<
@@ -338,9 +387,7 @@ export type ComponentClass<
   T = unknown,
   E = unknown,
 > = {
-  new (
-    props: P & { children?: Child[]; key?: string | number },
-  ): ClassComponent<P, S, T> & E;
+  new (props: NodeProps<P>): ClassComponent<P, S, T> & E;
 
   context?: Context<unknown>;
 };

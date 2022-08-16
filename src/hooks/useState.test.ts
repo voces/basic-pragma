@@ -1,7 +1,7 @@
 import { setAdapter } from "../adapter";
 import { createElement } from "../element";
 import { render } from "../reconciler";
-import { testAdapter, TestFrame } from "../test/testAdapter";
+import { testAdapter, TestFrame } from "../test/util/testAdapter";
 import { useState } from "./useState";
 
 setAdapter(testAdapter);
@@ -17,7 +17,7 @@ it("works", () => {
     return createElement("frame", { knownState: state });
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
 
   expect(fn).toHaveBeenCalledTimes(1);
   expect(fn).toHaveBeenCalledWith("foo");
@@ -50,10 +50,10 @@ it("does not thrash", () => {
 
     fn(state1 + state2);
 
-    return createElement("frame");
+    return createElement("frame", null);
   };
   const root = new TestFrame();
-  render(createElement(TestComponent), root);
+  render(createElement(TestComponent, null), root);
 
   expect(fn).toHaveBeenCalledTimes(1);
   expect(fn).toHaveBeenLastCalledWith("foo1foo2");
@@ -73,16 +73,16 @@ it("only rerenders self", () => {
     modifyChildState = () => setState((s) => s + 1);
     childRenders++;
 
-    return createElement("frame");
+    return createElement("frame", null);
   };
   let parentRenders = 0;
   const ParentComponent = () => {
     parentRenders++;
 
-    return createElement(ChildComponent);
+    return createElement(ChildComponent, null);
   };
 
-  render(createElement(ParentComponent), new TestFrame());
+  render(createElement(ParentComponent, null), new TestFrame());
 
   expect(childRenders).toEqual(1);
   expect(parentRenders).toEqual(1);

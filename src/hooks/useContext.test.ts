@@ -1,8 +1,8 @@
 import { setAdapter } from "../adapter";
 import { createContext } from "../createContext";
-import { createElement, VNode } from "../element";
+import { Children, createElement } from "../element";
 import { render } from "../reconciler";
-import { testAdapter, TestFrame } from "../test/testAdapter";
+import { testAdapter, TestFrame } from "../test/util/testAdapter";
 import { useContext } from "./useContext";
 import { useState } from "./useState";
 
@@ -15,7 +15,7 @@ it("uses default if not set", () => {
     fn(useContext(context));
     return null;
   };
-  render(createElement(TestComponent), new TestFrame());
+  render(createElement(TestComponent, null), new TestFrame());
 
   expect(fn).toHaveBeenCalledWith("foobar");
 });
@@ -31,7 +31,7 @@ it("inherits from provider", () => {
     createElement(
       context.Provider,
       { value: "buz" },
-      createElement(TestComponent),
+      createElement(TestComponent, null),
     ),
     new TestFrame(),
   );
@@ -43,7 +43,7 @@ it("updates when value updates", () => {
   const fn = jest.fn();
   const context = createContext("foo");
   let exposedSetState!: (nextState: string) => void;
-  const TestRoot = ({ children }: { children: VNode[] }) => {
+  const TestRoot = ({ children }: { children?: Children }) => {
     const [state, setState] = useState("bar");
     exposedSetState = setState;
     return createElement(context.Provider, { value: state }, children);
@@ -53,7 +53,7 @@ it("updates when value updates", () => {
     return null;
   };
   render(
-    createElement(TestRoot, undefined, createElement(TestComponent)),
+    createElement(TestRoot, null, createElement(TestComponent, null)),
     new TestFrame(),
   );
 

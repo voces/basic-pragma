@@ -1,0 +1,13 @@
+{
+  "extends": "./tsconfig.build.json",
+  "compilerOptions": {
+    // Remove jest/node
+    "types": []
+  },
+  "exclude": ["node_modules", "**/*.test.ts", "src/test"],
+  "tstl": {
+    "luaTarget": "universal",
+    "luaBundleEntry": "src/index.ts",
+    "luaBundle": "index.lua"
+  }
+}

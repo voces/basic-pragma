@@ -1,8 +1,9 @@
 import { setAdapter } from "./adapter";
 import { createElement, EmptyObject } from "./element";
 import { ClassComponent, reconcile } from "./reconciler";
-import { testAdapter, TestFrame } from "./test/testAdapter";
+import { testAdapter, TestFrame } from "./test/util/testAdapter";
 
+setAdapter(testAdapter);
 class TestClassComponent extends ClassComponent<EmptyObject> {
   state = { foo: "bar" };
   render() {
@@ -10,14 +11,13 @@ class TestClassComponent extends ClassComponent<EmptyObject> {
   }
 }
 
-const setupComponent = <P>(props: P) =>
-  reconcile(new TestFrame(), null, createElement(TestClassComponent, props));
-
-setAdapter(testAdapter);
-
 describe("state", () => {
   it("works", () => {
-    const instance = setupComponent({});
+    const instance = reconcile(
+      new TestFrame(),
+      null,
+      createElement(TestClassComponent, {}),
+    );
     const component = instance.component;
 
     expect(component).toBeTruthy();
