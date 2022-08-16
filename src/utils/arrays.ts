@@ -41,7 +41,7 @@ export const forEach = <T>(
   arr: T[],
   fn: (element: T, index: number) => void,
 ): void => {
-  if (!isLua) return arr.forEach(fn);
+  if (!isLua) return arr.forEach((e, i) => fn(e, i));
 
   const length = getLength(arr);
 
@@ -64,7 +64,7 @@ export const filter = (<A, B extends A>(
   arr: A[],
   fn: (element: A, index: number) => element is B,
 ) => {
-  if (!isLua) return arr.filter(fn);
+  if (!isLua) return arr.filter((e, i) => fn(e, i));
 
   const length = getLength(arr);
   const newArr: B[] = [];
@@ -86,7 +86,7 @@ export const map = <A, B>(
   arr: A[],
   fn: (element: A, index: number) => B,
 ) => {
-  if (!isLua) return arr.map(fn);
+  if (!isLua) return arr.map((e, i) => fn(e, i));
 
   const length = getLength(arr);
   const newArr: B[] = [];

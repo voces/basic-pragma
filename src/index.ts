@@ -1,3 +1,5 @@
+/** @noSelfInFile **/
+
 import { VNode } from "./element";
 
 export { Adapter, setAdapter } from "./adapter";
