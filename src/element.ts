@@ -32,12 +32,10 @@ export type Children = Child | Children[];
 
 // "children" should never be passed as a formal property. This type removes it.
 // If the remaining type is empty, props must be either an empty object or null.
-type InputProps<P> = P extends Record<string, unknown>
-  ? P[string] extends never ? (EmptyObject | null)
-  : keyof Omit<P, "children"> extends never ? (EmptyObject | null)
+type InputProps<P> = keyof Omit<P, "children"> extends never
+  ? (EmptyObject | null)
   : P extends { children: unknown } ? Omit<P, "children">
-  : P
-  : (EmptyObject | null);
+  : P;
 
 type InputChildren<P> = P extends { children: (infer C)[] } ? C[]
   : P extends { children: infer C } ? [C]

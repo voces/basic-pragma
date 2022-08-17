@@ -6,11 +6,11 @@ declare global {
   namespace JSX {
     interface IntrinsicElements {
       // deno-lint-ignore no-explicit-any
-      frame: Record<string, any>;
+      frame: Record<string, any> | null;
       // deno-lint-ignore no-explicit-any
-      foo: Record<string, any>;
+      foo: Record<string, any> | null;
       // deno-lint-ignore no-explicit-any
-      bar: Record<string, any>;
+      bar: Record<string, any> | null;
     }
   }
 }

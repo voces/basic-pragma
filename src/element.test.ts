@@ -15,28 +15,6 @@ describe("createElement", () => {
     });
   });
 
-  it.skip("strips key", () => {
-    expect(createElement("frame", { foo: "bar", baz: 7, key: 0 })).toEqual({
-      type: "frame",
-      key: 0,
-      props: { foo: "bar", baz: 7 },
-    });
-  });
-
-  it.skip("doesn't render nullish values", () => {
-    expect(createElement("frame", {}, [null, undefined])).toEqual({
-      type: "frame",
-      props: {},
-    });
-  });
-
-  it.skip("doesn't render booleans", () => {
-    expect(createElement("frame", {}, [false, true])).toEqual({
-      type: "frame",
-      props: {},
-    });
-  });
-
   it("nested", () => {
     expect(
       createElement("frame", { outer: true }, [

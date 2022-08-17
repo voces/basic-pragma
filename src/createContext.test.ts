@@ -13,7 +13,7 @@ it("no provider uses default value", () => {
   render(
     createElement(
       Consumer,
-      {}, // TODO: null should be acceptable
+      null,
       (v) => fn(v),
     ),
     new TestFrame(),

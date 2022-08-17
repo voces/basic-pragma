@@ -1,4 +1,5 @@
 import { setAdapter } from "./adapter";
+import { TEXT_ELEMENT } from "./common";
 import { createElement, Fragment } from "./element";
 import { ClassComponent, reconcile, render, test } from "./reconciler";
 import { buildFrame, buildInstance, buildNode } from "./test/util/builders";
@@ -383,5 +384,29 @@ describe("render", () => {
     render(createElement("frame", { foo: "bar" }), root);
 
     expect(root.children).toEqual([buildFrame({ foo: "bar" })]);
+  });
+
+  it("skips non-renderable children", () => {
+    const root = new TestFrame();
+    render(
+      createElement(
+        "frame",
+        null,
+        "foo",
+        true,
+        false,
+        "bar",
+        null,
+        undefined,
+        createElement("frame", { me: "too" }),
+      ),
+      root,
+    );
+
+    expect(root.children[0].children).toEqual([
+      buildFrame({ nodeValue: "foo" }, TEXT_ELEMENT),
+      buildFrame({ nodeValue: "bar" }, TEXT_ELEMENT),
+      buildFrame({ me: "too" }),
+    ]);
   });
 });

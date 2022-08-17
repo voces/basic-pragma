@@ -5,7 +5,7 @@ import {
   ComponentType,
   FunctionComponent as FunctionalComponentType,
 } from "./Component";
-import { Child, Children, NodeProps, VNode } from "./element";
+import { Children, NodeProps, VNode } from "./element";
 import { isLua, TEXT_ELEMENT } from "./common";
 import { Context } from "./createContext";
 import { getLength } from "./utils/arrays";
@@ -193,10 +193,9 @@ function* childIterator(children: unknown): Generator<VNode<unknown> | string> {
   }
 }
 
-const createTextElement = (nodeValue: string) => ({
-  type: TEXT_ELEMENT,
-  props: { nodeValue, children: [] as Child[] },
-} as VNode<unknown>);
+const createTextElement = (
+  nodeValue: string,
+) => ({ type: TEXT_ELEMENT, props: { nodeValue } });
 
 const childrenAsNodes = (children: unknown): VNode<unknown>[] => {
   const arr: VNode<unknown>[] = [];
