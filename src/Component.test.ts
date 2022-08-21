@@ -1,7 +1,7 @@
 import { setAdapter } from "./adapter";
 import { createElement, EmptyObject } from "./element";
 import { ClassComponent, reconcile } from "./reconciler";
-import { testAdapter, TestFrame } from "./test/util/testAdapter";
+import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
 class TestClassComponent extends ClassComponent<EmptyObject> {

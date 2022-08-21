@@ -2,8 +2,8 @@ import { setAdapter } from "./adapter";
 import { TEXT_ELEMENT } from "./utils/common";
 import { createElement, Fragment } from "./element";
 import { ClassComponent, reconcile, render, test } from "./reconciler";
-import { buildFrame, buildInstance, buildNode } from "./test/util/builders";
-import { testAdapter, TestFrame } from "./test/util/testAdapter";
+import { buildFrame, buildInstance, buildNode } from "./test/builders";
+import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
 

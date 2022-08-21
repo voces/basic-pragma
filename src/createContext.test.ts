@@ -3,7 +3,7 @@ import { createContext } from "./createContext";
 import { Children, createElement } from "./element";
 import { useState } from "./hooks/useState";
 import { render } from "./reconciler";
-import { testAdapter, TestFrame } from "./test/util/testAdapter";
+import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
 

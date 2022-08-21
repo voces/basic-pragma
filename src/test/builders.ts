@@ -1,4 +1,4 @@
-import { VNode } from "../../element";
+import { VNode } from "../element";
 
 export const buildFrame = (
   props: Record<string, unknown> = {},

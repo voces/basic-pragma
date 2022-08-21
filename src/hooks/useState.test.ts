@@ -1,7 +1,7 @@
 import { setAdapter } from "../adapter";
 import { createElement } from "../element";
 import { render } from "../reconciler";
-import { testAdapter, TestFrame } from "../test/util/testAdapter";
+import { testAdapter, TestFrame } from "../test/testAdapter";
 import { useState } from "./useState";
 
 setAdapter(testAdapter);

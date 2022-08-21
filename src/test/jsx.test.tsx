@@ -1,8 +1,8 @@
 /** @jsx createElement */
 
 import { createElement, render, setAdapter, VNode } from "../index";
-import { buildFrame, buildNode } from "./util/builders";
-import { testAdapter, TestFrame } from "./util/testAdapter";
+import { buildFrame, buildNode } from "./builders";
+import { testAdapter, TestFrame } from "./testAdapter";
 
 setAdapter(testAdapter);
 

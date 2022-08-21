@@ -1,6 +1,6 @@
-import { Adapter } from "../../adapter";
-import { EmptyObject } from "../../element";
-import { flushUpdates } from "../../reconciler";
+import { Adapter } from "../adapter";
+import { EmptyObject } from "../element";
+import { flushUpdates } from "../reconciler";
 
 declare global {
   namespace JSX {
