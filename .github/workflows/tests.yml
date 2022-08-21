@@ -1,11 +1,7 @@
 name: tests
 on:
-  push:
-    paths:
-      - '**.tsx?'
-      - 'package.json'
-      - '.github/**'
-  workflow_dispatch:
+  push
+  workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest
