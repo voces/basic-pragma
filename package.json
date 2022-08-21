@@ -4,14 +4,16 @@
   "description": "Configurable JSX pragma using a basic vdom",
   "author": "verit",
   "license": "MIT",
-  "main": "./dist/index.js",
-  "types": "./dist/index.d.ts",
+  "main": "./dist/index",
+  "types": "./dist/index",
   "scripts": {
-    "build": "tsc --project tsconfig.build.json",
+    "build-lua": "rm -rf dist & tstl --project tsconfig.buildLua.json",
+    "build": "rm -rf dist & tsc --project tsconfig.build.json",
     "dev": "tsc --project tsconfig.build.json --watch",
-    "prepublishOnly": "rm -rf dist & npm run build",
     "lint": "deno fmt . --ignore=package.json,package-lock.json",
-    "test-lint": "deno lint . --ignore=node_modules/*",
+    "prepublishOnly": "npm run build",
+    "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
+    "test-lint": "deno lint . --ignore=node_modules,dist",
     "test": "jest"
   },
   "keywords": [
@@ -31,9 +33,11 @@
     "@babel/preset-env": "^7.18.10",
     "@babel/preset-typescript": "^7.18.6",
     "@types/jest": "^26.0.14",
+    "fengari": "^0.1.4",
     "jest": "^28.1.3",
     "ts-jest": "^28.0.7",
-    "typescript": "^4.7.4"
+    "typescript": "^4.7.4",
+    "typescript-to-lua": "^1.8.2"
   },
   "files": [
     "dist/",

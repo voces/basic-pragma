@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { hookContext, hookMap } from "./context";
 import { HookState } from "./types";
 import "./reconcilerHooks";
@@ -9,7 +7,10 @@ export const useReducer = <S, A>(
   initialState: S,
 ): [S, (action: A) => void] => {
   const index = hookContext.currentIndex++;
-  const hooks = hookMap.get(hookContext.currentInstance)!;
+  const hooks = hookMap.get(hookContext.currentInstance);
+  if (!hooks) {
+    throw `Could not located hook map. Are you using hooks outside of the render path?`;
+  }
   const state = (hooks[index] ??
     (hooks[index] = { type: "reducer" })) as HookState<S, A>;
 

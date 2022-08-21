@@ -1,14 +1,11 @@
-/** @noSelfInFile **/
+import type { Children, EmptyObject, NodeProps } from "./element";
+import type { ComponentClass, Contexts } from "./reconciler";
 
-import { Child, Children } from "./element";
-import { ClassComponent } from "./reconciler";
-
-export type FunctionalComponent<P> = (
-  props: P & { children?: Children; key?: string | number },
-) => Children | Child;
+export type FunctionComponent<P = EmptyObject> = (
+  props: NodeProps<P>,
+  contexts: Contexts,
+) => Children;
 
 export type ComponentType<P> =
-  | (new (
-    props: P & { children?: Children; key?: string | number },
-  ) => ClassComponent<P>)
-  | FunctionalComponent<P>;
+  | ComponentClass<P>
+  | FunctionComponent<P>;

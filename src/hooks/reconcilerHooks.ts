@@ -1,7 +1,5 @@
-/** @noSelfInFile **/
-
-import { hooks } from "../reconciler";
-import { hookContext, hookMap } from "./context";
+import { ClassComponent } from "../reconciler";
+import { hookContext, hookMap, hooks } from "./context";
 
 const oldBeforeRender = hooks.beforeRender;
 const oldBeforeUnmount = hooks.beforeUnmount;
@@ -9,7 +7,8 @@ const oldBeforeUnmount = hooks.beforeUnmount;
 hooks.beforeRender = (instance) => {
   oldBeforeRender(instance);
 
-  hookContext.currentInstance = instance;
+  // TODO: somehow switch to a context/with pattern
+  hookContext.currentInstance = instance as ClassComponent<unknown>;
   hookContext.currentIndex = 0;
 
   if (!hookMap.has(instance)) hookMap.set(instance, []);

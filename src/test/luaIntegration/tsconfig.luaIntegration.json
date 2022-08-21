@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "Node16",
+    "target": "ES2022",
+    "lib": ["DOM", "ES2022"],
+    "jsx": "react",
+    "esModuleInterop": true,
+    "rootDir": "."
+  },
+  "include": ["source.tsx"],
+  "tstl": {
+    "luaBundleEntry": "source.tsx",
+    "luaBundle": "dist/output.lua",
+    "noImplicitSelf": true
+  }
+}

@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 export type Inputs = ReadonlyArray<unknown>;
 
 export const argsChanged = (oldArgs: Inputs, newArgs: Inputs): boolean =>

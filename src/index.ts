@@ -1,14 +1,32 @@
+import { VNode } from "./element";
+
 export { Adapter, setAdapter } from "./adapter";
-export {
-  Children,
-  createElement,
-  EmptyObject,
-  Fragment,
-  VNode,
-} from "./element";
+export { Child, createElement, EmptyObject, Fragment, VNode } from "./element";
 export { flushUpdates, render } from "./reconciler";
+export { FunctionComponent as FunctionalComponent } from "./Component";
+export { createContext } from "./createContext";
+export { isLua } from "./utils/common";
 export { useReducer } from "./hooks/useReducer";
 export { useForceUpdate, useState } from "./hooks/useState";
 export { useEffect } from "./hooks/useEffect";
 export { useRef } from "./hooks/useRef";
-export { FunctionalComponent } from "./Component";
+export { useContext } from "./hooks/useContext";
+
+declare global {
+  namespace JSX {
+    // deno-lint-ignore no-empty-interface
+    interface IntrinsicElements {}
+
+    interface ElementAttributesProperty {
+      props: unknown;
+    }
+
+    interface ElementChildrenAttribute {
+      children: unknown;
+    }
+
+    // TODO: this allows passing the wrong node type around...
+    // deno-lint-ignore no-explicit-any
+    type Element = VNode<any>;
+  }
+}

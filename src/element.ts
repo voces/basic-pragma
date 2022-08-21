@@ -1,85 +1,93 @@
-/** @noSelfInFile **/
-
 import { ComponentType } from "./Component";
-import { TEXT_ELEMENT } from "./common";
-import { compact, getLength } from "./utils/arrays";
+import { getLength } from "./utils/arrays";
 
-export interface VNode<P> {
+export type EmptyObject = Record<string, never>;
+
+export type PropChildren<P> = P extends { children: (infer C)[] }
+  ? (C[] | C | undefined)
+  : P extends { children: infer C } ? C
+  : Children;
+
+export type NodeProps<P> =
+  & Omit<P, "children">
+  & ("children" extends keyof P ? { children: PropChildren<P> }
+    : { children?: PropChildren<P> });
+
+export interface VNode<P = EmptyObject> {
   type: string | ComponentType<P>;
-  props: P & { children?: Children };
+  props: NodeProps<P>;
   key?: string | number;
 }
 
-// deno-lint-ignore no-explicit-any
-export type Child = VNode<any> | string | boolean | null | undefined;
-
-export type Children = (Child[] | Child)[];
-
-export const isChild = (obj: Children | Child): obj is Child =>
-  (typeof obj === "object" && obj != null && "type" in obj && "props" in obj) ||
-  typeof obj === "boolean" ||
-  typeof obj === "string";
-
-// deno-lint-ignore no-explicit-any
-type RenderableChildElement = VNode<any> | string;
-
-// deno-lint-ignore no-explicit-any
-export const processChildren = (children: Children): VNode<any>[] =>
-  compact(compact(children).flat())
-    .filter(
-      (c): c is RenderableChildElement =>
-        typeof c !== "boolean" &&
-        // filters out empty objects which are left because Array.flat() is not correct
-        (typeof c === "string" || !!c.type),
-    )
-    .map((
-      c,
-    ) => (typeof c === "string" ? createTextElement(c) : c));
-
-const EMPTY_OBJECT = {};
-export type EmptyObject = typeof EMPTY_OBJECT;
-
-export function createElement<P>(
-  type: string | ComponentType<P>,
+export type Child =
   // deno-lint-ignore no-explicit-any
-  props: P & { key?: string | number; children?: VNode<any>[] },
-  ...children: Children
-): VNode<P>;
-export function createElement(
-  type: string | ComponentType<typeof EMPTY_OBJECT>,
-  // deno-lint-ignore no-explicit-any
-  props?: { key?: string | number; children?: VNode<any>[] },
-  ...children: Children
-): VNode<typeof EMPTY_OBJECT>;
-export function createElement<P>(
-  type: string | ComponentType<P>,
-  // deno-lint-ignore no-explicit-any
-  props: P & { key?: string | number; children?: VNode<any>[] },
-  ...children: Children
-): VNode<P> {
-  const { key = null, ...rest } = { ...props };
-  const flattenedChildren = processChildren(
-    children && getLength(children) > 0 ? children : [],
-  );
+  | VNode<any>
+  | string
+  | boolean
+  | null
+  | undefined;
 
-  // deno-lint-ignore no-explicit-any
-  if (flattenedChildren.length > 0) rest.children = flattenedChildren as any;
-  else delete rest.children;
+export type Children = Child | Children[];
 
-  // IDK why this is mad, prop is LocalP - key + children, which should work...
-  // deno-lint-ignore no-explicit-any
-  const vnode: VNode<P> = { type, props: rest } as any;
+// "children" should never be passed as a formal property. This type removes it.
+// If the remaining type is empty, props must be either an empty object or null.
+type InputProps<P> = keyof Omit<P, "children"> extends never
+  ? (EmptyObject | null)
+  : P extends { children: unknown } ? Omit<P, "children">
+  : P;
 
-  // Only set key if not nullish
-  if (key != null) vnode.key = key;
+type InputChildren<P> = P extends { children: (infer C)[] } ? C[]
+  : P extends { children: infer C } ? [C]
+  : Children[];
+
+const processChildren = <P>(children: InputChildren<P>) =>
+  (getLength(children) > 1
+    ? children
+    : getLength(children) === 1
+    ? children[0]
+    : getLength(children) === 0
+    ? undefined
+    : children) as PropChildren<P>;
+
+type CreateElement = {
+  <P>(
+    type: ComponentType<P>,
+    props: InputProps<P>,
+    ...children: InputChildren<P>
+    // deno-lint-ignore no-explicit-any
+  ): VNode<any>;
+  <T extends keyof JSX.IntrinsicElements, P extends JSX.IntrinsicElements[T]>(
+    type: T,
+    props: InputProps<P>,
+    ...children: InputChildren<P>
+    // deno-lint-ignore no-explicit-any
+  ): VNode<any>;
+};
+
+export const createElement: CreateElement = <
+  P,
+  T extends keyof JSX.IntrinsicElements | ComponentType<P>,
+>(
+  type: T,
+  props: InputProps<
+    T extends keyof JSX.IntrinsicElements ? JSX.IntrinsicElements[T] : P
+  >,
+  ...children: InputChildren<P>
+  // deno-lint-ignore no-explicit-any
+): VNode<any> => {
+  const normalizedProps = {
+    ...(props ?? {}),
+    children: processChildren(children) as PropChildren<P>,
+  } as NodeProps<P>;
+
+  const vnode: VNode<P> = {
+    type,
+    props: normalizedProps,
+  };
 
   return vnode;
-}
-
-function createTextElement(value: string): VNode<{ nodeValue: string }> {
-  return createElement(TEXT_ELEMENT, { nodeValue: value });
-}
+};
 
 export const Fragment = (
   { children }: { children?: Children },
-): Children | null => children ?? null;
+) => children ?? null;

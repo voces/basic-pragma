@@ -2,9 +2,10 @@
   "compilerOptions": {
     "declaration": true,
     "forceConsistentCasingInFileNames": true,
-    "lib": ["ESNext"],
+    "lib": ["ESNext", "DOM"],
     "module": "commonjs",
     "moduleResolution": "node",
+    "jsx": "react",
     "noImplicitThis": true,
     "outDir": "./dist/",
     "skipLibCheck": true,
@@ -13,5 +14,5 @@
     "types": ["@types/jest", "@types/node"]
   },
   "include": ["src"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules", "src/test/luaIntegration"]
 }

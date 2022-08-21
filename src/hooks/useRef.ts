@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { hookContext, hookMap } from "./context";
 import { HookState } from "./types";
 import "./reconcilerHooks";
@@ -15,7 +13,10 @@ const initializeRef = <T>(initial: T): HookState<T> => {
 
 export const useRef = <T>(initial: T): { current: T } => {
   const index = hookContext.currentIndex++;
-  const hooks = hookMap.get(hookContext.currentInstance)!;
+  const hooks = hookMap.get(hookContext.currentInstance);
+  if (!hooks) {
+    throw `Could not located hook map. Are you using hooks outside of the render path?`;
+  }
   const state = (hooks[index] ??
     (hooks[index] = initializeRef(initial))) as HookState<T>;
 
@@ -23,6 +24,5 @@ export const useRef = <T>(initial: T): { current: T } => {
     throw `Expected a ref hook at index ${index}, got ${state.type}`;
   }
 
-  // deno-lint-ignore no-explicit-any
-  return (state as any) as { current: T };
+  return state;
 };

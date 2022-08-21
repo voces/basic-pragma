@@ -1,6 +1,4 @@
-/** @noSelfInFile **/
-
-import { ClassComponent } from "../reconciler";
+import type { ClassComponent } from "../reconciler";
 
 export interface ReducerState<S, A> {
   type: "reducer";

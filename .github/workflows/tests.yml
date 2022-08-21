@@ -1,11 +1,7 @@
 name: tests
 on:
-  push:
-    paths:
-      - '**.tsx?'
-      - 'package.json'
-      - '.github/**'
-  workflow_dispatch:
+- push
+- workflow_dispatch
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -17,10 +13,13 @@ jobs:
         node-version: '18.x'
     - name: Install dependencies
       run: npm install
+    - name: Build Lua
+      run: npm run build-lua
     - name: Run tests
       run: npm test
-    - uses: denoland/setup-deno@v1
-    - name: Run linter
+    - name: Use Deno
+      uses: denoland/setup-deno@v1
+    - name: Lint
       run: npm run test-lint
-    - name: Run build
+    - name: Build TS
       run: npm run build

@@ -1,198 +1,182 @@
 import { setAdapter } from "./adapter";
+import { TEXT_ELEMENT } from "./utils/common";
 import { createElement, Fragment } from "./element";
 import { ClassComponent, reconcile, render, test } from "./reconciler";
+import { buildFrame, buildInstance, buildNode } from "./test/builders";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
 setAdapter(testAdapter);
 
 describe("reconcile", () => {
   describe("creating an instance", () => {
-    describe("base type", () => {
+    describe("intrinsics", () => {
       it("first child", () => {
         const root = new TestFrame();
-        const vnode = createElement("child");
+        const vnode = createElement("frame", null);
         const instance = reconcile(root, null, vnode);
 
         expect(instance).toEqual({
           childInstances: [],
           hostFrame: {
             children: [],
-            jsxType: "child",
+            jsxType: "frame",
             props: {},
-            type: "test-frame",
           },
           vnode,
         });
-        expect(root.children.length).toEqual(1);
+        expect(root.children).toEqual([instance.hostFrame]);
       });
 
       it("second child", () => {
         const root = new TestFrame();
-        new TestFrame(undefined, root);
-        const vnode = createElement("child");
-        const instance = reconcile(root, null, vnode);
+        const firstChild = new TestFrame(undefined, root);
+        const vnode = createElement("frame", null);
+        const secondChild = reconcile(root, null, vnode);
 
-        expect(instance).toEqual({
+        expect(secondChild).toEqual({
           childInstances: [],
           hostFrame: {
             children: [],
-            jsxType: "child",
+            jsxType: "frame",
             props: {},
-            type: "test-frame",
           },
           vnode,
         });
-        expect(root.children.length).toEqual(2);
+        expect(root.children).toEqual([firstChild, secondChild.hostFrame]);
       });
 
       it("child with props", () => {
         const root = new TestFrame();
-        const vnode = createElement("child", { foo: "bar" });
+        const vnode = createElement("frame", { foo: "bar" });
         const instance = reconcile(root, null, vnode);
 
         expect(instance).toEqual({
           childInstances: [],
           hostFrame: {
             children: [],
-            jsxType: "child",
+            jsxType: "frame",
             props: { foo: "bar" },
-            type: "test-frame",
           },
           vnode,
         });
-        expect(root.children.length).toEqual(1);
+        expect(root.children).toEqual([instance.hostFrame]);
       });
 
       it("nested children", () => {
         const root = new TestFrame();
-        const grandChildVNode = createElement("grandchild");
-        const vnode = createElement("child", undefined, [
-          grandChildVNode,
-        ]);
-        const instance = reconcile(root, null, vnode);
-        const grandchildFrame = {
+        const fooNode = createElement("foo", null);
+        const barNode = createElement("bar", null, fooNode);
+        const instance = reconcile(root, null, barNode);
+        const fooFrame = {
           children: [],
-          jsxType: "grandchild",
+          jsxType: "foo",
           props: {},
-          type: "test-frame",
         };
-        const grandchildVnode = { type: "grandchild", props: {} };
 
         expect(instance).toEqual({
           childInstances: [
             {
               childInstances: [],
-              hostFrame: grandchildFrame,
-              vnode: grandchildVnode,
+              hostFrame: fooFrame,
+              vnode: fooNode,
             },
           ],
           hostFrame: {
-            children: [grandchildFrame],
-            jsxType: "child",
-            props: { children: [grandChildVNode] },
-            type: "test-frame",
+            children: [fooFrame],
+            jsxType: "bar",
+            props: { children: fooNode },
           },
-          vnode,
+          vnode: barNode,
         });
         expect(root.children.length).toEqual(1);
       });
+
+      it("multiple children", () => {
+        const instance = reconcile(
+          new TestFrame(),
+          null,
+          createElement(
+            "frame",
+            null,
+            createElement("frame", { a: true }),
+            createElement("frame", { b: true }),
+          ),
+        );
+
+        expect(instance).toEqual(buildInstance({
+          children: [buildNode({ a: true }), buildNode({ b: true })],
+        }));
+      });
+
+      it("array children", () => {
+        const instance = reconcile(
+          new TestFrame(),
+          null,
+          createElement(
+            "frame",
+            null,
+            [
+              createElement("frame", { a: true }),
+              createElement("frame", { b: true }),
+            ],
+          ),
+        );
+
+        expect(instance).toEqual(buildInstance({
+          children: [buildNode({ a: true }), buildNode({ b: true })],
+        }));
+      });
     });
 
-    it("fragments", () => {
+    it("Fragment", () => {
       const root = new TestFrame();
-      const aVNode = createElement("a");
-      const bVNode = createElement("b");
+      const aVNode = createElement("frame", { a: true });
+      const bVNode = createElement("frame", { b: true });
       const instance = reconcile(
         root,
         null,
-        createElement(Fragment, {}, [aVNode, bVNode]),
+        createElement(Fragment, {}, aVNode, bVNode),
       );
 
-      const frame = (overrides: Partial<TestFrame>) => ({
-        children: [],
-        jsxType: "a",
-        props: {},
-        type: "test-frame",
-        ...overrides,
-      });
-
-      expect(instance).toEqual({
-        childInstances: [
-          {
-            childInstances: [],
-            hostFrame: frame({ jsxType: "a" }),
-            vnode: aVNode,
-          },
-          {
-            childInstances: [],
-            hostFrame: frame({ jsxType: "b" }),
-            vnode: bVNode,
-          },
-        ],
-        component: { props: { children: [aVNode, bVNode] }, state: {} },
-        vnode: {
-          type: Fragment,
-          props: { children: [aVNode, bVNode] },
-        },
-      });
+      expect(instance).toEqual(
+        buildInstance({
+          children: [buildNode({ a: true }), buildNode({ b: true })],
+        }, Fragment),
+      );
     });
 
-    it("functional components", () => {
-      const FunctionalComponent = (props: { foo: string }) =>
-        createElement("base", props);
+    it("function components", () => {
+      const MyFunctionComponent = (props: { foo: string }) =>
+        createElement("frame", props);
 
-      const root = new TestFrame();
-      const props = { foo: "bar" };
-      const vnode = createElement(FunctionalComponent, props);
-      const instance = reconcile(root, null, vnode);
-      const hostFrame = {
-        children: [],
-        jsxType: "base",
-        props,
-        type: "test-frame",
-      };
+      const instance = reconcile(
+        new TestFrame(),
+        null,
+        createElement(MyFunctionComponent, { foo: "bar" }),
+      );
 
       expect(instance).toEqual({
-        childInstances: [
-          {
-            childInstances: [],
-            hostFrame,
-            vnode: { props, type: "base" },
-          },
-        ],
-        component: { props, state: {} },
-        vnode,
+        ...buildInstance({ foo: "bar" }, MyFunctionComponent),
+        childInstances: [buildInstance({ foo: "bar" })],
       });
     });
 
     it("class components", () => {
-      class TestClassComponent extends ClassComponent<{ foo: string }> {
+      class MyClassComponent extends ClassComponent<{ foo: string }> {
         render(props: { foo: string }) {
-          return createElement("base", props);
+          return createElement("frame", props);
         }
       }
 
-      const root = new TestFrame();
-      const props = { foo: "bar" };
-      const vnode = createElement(TestClassComponent, props);
-      const instance = reconcile(root, null, vnode);
-      const hostFrame = {
-        children: [],
-        jsxType: "base",
-        props,
-        type: "test-frame",
-      };
+      const instance = reconcile(
+        new TestFrame(),
+        null,
+        createElement(MyClassComponent, { foo: "bar" }),
+      );
 
       expect(instance).toEqual({
-        childInstances: [
-          {
-            childInstances: [],
-            hostFrame,
-            vnode: { props, type: "base" },
-          },
-        ],
-        component: { props, state: {} },
-        vnode,
+        ...buildInstance({ foo: "bar" }, MyClassComponent),
+        childInstances: [buildInstance({ foo: "bar" })],
       });
     });
   });
@@ -200,7 +184,7 @@ describe("reconcile", () => {
   describe("removing instances", () => {
     it("removing an instance", () => {
       const root = new TestFrame();
-      const vnode = createElement("child");
+      const vnode = createElement("frame", null);
       const instance = reconcile(root, null, vnode);
 
       expect(root).toEqual(
@@ -214,9 +198,9 @@ describe("reconcile", () => {
 
     it("removing child instances", () => {
       const root = new TestFrame();
-      const vnode = createElement("child", {}, [
-        createElement("grandchild"),
-        createElement("grandchild"),
+      const vnode = createElement("frame", {}, [
+        createElement("frame", null),
+        createElement("frame", null),
       ]);
       const instance = reconcile(root, null, vnode);
 
@@ -232,8 +216,8 @@ describe("reconcile", () => {
 
   it("replacing an instance", () => {
     const root = new TestFrame();
-    const oldChild = createElement("old-child");
-    const newChild = createElement("new-child");
+    const oldChild = createElement("foo", null);
+    const newChild = createElement("bar", null);
     const oldInstance = reconcile(root, null, oldChild);
 
     expect(root).toEqual(
@@ -252,8 +236,7 @@ describe("reconcile", () => {
   describe("updating an instance", () => {
     it("adding props to an instance with none", () => {
       const root = new TestFrame();
-      const vnode = createElement("child");
-      const instance = reconcile(root, null, vnode);
+      const instance = reconcile(root, null, createElement("frame", null));
 
       expect(root).toEqual(
         expect.objectContaining({ children: [instance.hostFrame] }),
@@ -262,7 +245,7 @@ describe("reconcile", () => {
       const newInstance = reconcile(
         root,
         instance,
-        createElement("child", { foo: "foo-1" }),
+        createElement("frame", { foo: "foo-1" }),
       );
 
       expect(newInstance).toEqual(instance);
@@ -271,11 +254,14 @@ describe("reconcile", () => {
 
     it("adding, changing, and removing props", () => {
       const root = new TestFrame();
-      const vnode = createElement("child", {
-        foo: "foo-1",
-        bar: "bar-1",
-      });
-      const instance = reconcile(root, null, vnode);
+      const instance = reconcile(
+        root,
+        null,
+        createElement("frame", {
+          foo: "foo-1",
+          bar: "bar-1",
+        }),
+      );
 
       expect(root).toEqual(
         expect.objectContaining({ children: [instance.hostFrame] }),
@@ -284,7 +270,7 @@ describe("reconcile", () => {
       const newInstance = reconcile(
         root,
         instance,
-        createElement("child", { bar: "bar-2", baz: "baz-1" }),
+        createElement("frame", { bar: "bar-2", baz: "baz-1" }),
       );
 
       expect(newInstance).toEqual(instance);
@@ -296,11 +282,14 @@ describe("reconcile", () => {
 
     it("adding, changing, and removing grandchild props", () => {
       const root = new TestFrame();
-      const vnode = createElement("child", {}, [
-        createElement("grandchild", { index: 0 }),
-        createElement("grandchild", { index: 1 }),
-      ]);
-      const instance = reconcile(root, null, vnode);
+      const instance = reconcile(
+        root,
+        null,
+        createElement("frame", {}, [
+          createElement("frame", { index: 0 }),
+          createElement("frame", { index: 1 }),
+        ]),
+      );
 
       expect(root).toEqual(
         expect.objectContaining({ children: [instance.hostFrame] }),
@@ -309,97 +298,82 @@ describe("reconcile", () => {
       const newInstance = reconcile(
         root,
         instance,
-        createElement("child", {}, [
-          createElement("grandchild", { index: 1 }),
-          createElement("grandchild", { index: 2 }),
+        createElement("frame", {}, [
+          createElement("frame", { index: 1 }),
+          createElement("frame", { index: 2 }),
         ]),
       );
 
       expect(newInstance).toEqual(instance);
-      expect(instance.hostFrame!.children).toEqual([
+      expect(instance.hostFrame?.children).toEqual([
         {
           children: [],
-          jsxType: "grandchild",
+          jsxType: "frame",
           props: { index: 1 },
-          type: "test-frame",
         },
         {
           children: [],
-          jsxType: "grandchild",
+          jsxType: "frame",
           props: { index: 2 },
-          type: "test-frame",
         },
       ]);
     });
 
-    it("updating functional components", () => {
-      const FunctionalComponent = (props: {
+    it("updating function components", () => {
+      const MyFunctionComponent = (props: {
         foo?: string;
         bar: string;
         baz?: string;
-      }) => createElement("base", props);
+      }) => createElement("frame", props);
 
       const root = new TestFrame();
-      const vnode = createElement(FunctionalComponent, {
-        bar: "bar-1",
-        foo: "foo-1",
-      });
-      const instance = reconcile(root, null, vnode);
-      const hostFrame = {
-        children: [],
-        jsxType: "base",
-        props: { bar: "bar-1", foo: "foo-1" },
-        type: "test-frame",
-      };
+      const instance = reconcile(
+        root,
+        null,
+        createElement(MyFunctionComponent, {
+          bar: "bar-1",
+          foo: "foo-1",
+        }),
+      );
 
       expect(instance).toEqual({
-        childInstances: [
-          {
-            childInstances: [],
-            hostFrame,
-            vnode: {
-              props: { bar: "bar-1", foo: "foo-1" },
-              type: "base",
-            },
-          },
-        ],
-        component: { props: { bar: "bar-1", foo: "foo-1" }, state: {} },
-        vnode,
+        ...buildInstance({ bar: "bar-1", foo: "foo-1" }, MyFunctionComponent),
+        childInstances: [buildInstance({ bar: "bar-1", foo: "foo-1" })],
       });
 
       const newInstance = reconcile(
         root,
         instance,
-        createElement(FunctionalComponent, {
+        createElement(MyFunctionComponent, {
           bar: "bar-2",
           baz: "baz-1",
         }),
       );
 
-      expect(newInstance).toEqual(instance);
+      expect(newInstance).toBe(instance);
       expect(instance.vnode.props).toEqual({
         bar: "bar-2",
         baz: "baz-1",
       });
       expect(instance.component?.props).toEqual(instance.vnode.props);
-      expect(instance.childInstances[0]!.vnode.props).toEqual(
+      expect(instance.childInstances[0].vnode.props).toEqual(
         instance.vnode.props,
       );
     });
   });
 
-  it("memoizes functional components", () => {
-    const FunctionalComponent = () => createElement("base", { foo: "bar" });
+  it("memoizes function components", () => {
+    const MyFunctionComponent = () => createElement("frame", { foo: "bar" });
 
-    reconcile(new TestFrame(), null, createElement(FunctionalComponent));
-    const klass = test.functionalComponentClasses.get(FunctionalComponent);
+    reconcile(new TestFrame(), null, createElement(MyFunctionComponent, null));
+    const klass = test.functionalComponentClasses.get(MyFunctionComponent);
 
     expect(klass).not.toEqual(undefined);
 
-    reconcile(new TestFrame(), null, createElement(FunctionalComponent));
+    reconcile(new TestFrame(), null, createElement(MyFunctionComponent, null));
 
     expect(
-      test.functionalComponentClasses.get(FunctionalComponent),
+      test.functionalComponentClasses.get(MyFunctionComponent),
     ).toEqual(klass);
   });
 });
@@ -407,17 +381,32 @@ describe("reconcile", () => {
 describe("render", () => {
   it("works", () => {
     const root = new TestFrame();
-    const vnode = createElement("child");
-    render(vnode, root);
-    const firstChild = root.children[0];
+    render(createElement("frame", { foo: "bar" }), root);
 
-    expect(root.children.length).toEqual(1);
-    expect(firstChild).toEqual({
-      children: [],
-      jsxType: "child",
-      props: {},
-      type: "test-frame",
-    });
-    expect(vnode).toEqual({ type: "child", props: {} });
+    expect(root.children).toEqual([buildFrame({ foo: "bar" })]);
+  });
+
+  it("skips non-renderable children", () => {
+    const root = new TestFrame();
+    render(
+      createElement(
+        "frame",
+        null,
+        "foo",
+        true,
+        false,
+        "bar",
+        null,
+        undefined,
+        createElement("frame", { me: "too" }),
+      ),
+      root,
+    );
+
+    expect(root.children[0].children).toEqual([
+      buildFrame({ nodeValue: "foo" }, TEXT_ELEMENT),
+      buildFrame({ nodeValue: "bar" }, TEXT_ELEMENT),
+      buildFrame({ me: "too" }),
+    ]);
   });
 });

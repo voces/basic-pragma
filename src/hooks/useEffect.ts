@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { hookContext, hookMap } from "./context";
 import { argsChanged, Inputs } from "./helpers";
 import { HookState } from "./types";
@@ -10,7 +8,10 @@ export const useEffect = <I extends Inputs>(
   inputs?: I,
 ): void => {
   const index = hookContext.currentIndex++;
-  const hooks = hookMap.get(hookContext.currentInstance)!;
+  const hooks = hookMap.get(hookContext.currentInstance);
+  if (!hooks) {
+    throw `Could not located hook map. Are you using hooks outside of the render path?`;
+  }
   const oldState = hooks[index];
   const state = (oldState ??
     (hooks[index] = { type: "effect" })) as HookState<I>;
