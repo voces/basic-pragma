@@ -14,11 +14,9 @@ export const stringify = (v: unknown, set = new WeakSet()): string => {
     if (set.has(v)) return "[cycle-arr]";
     set.add(v);
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const arr = v as Array<any>;
+    const arr = v as Array<unknown>;
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return `[ ${arr.map((v: any) => stringify(v, set)).join(", ")} ]`;
+    return `[ ${arr.map((v) => stringify(v, set)).join(", ")} ]`;
   }
 
   if (typeof v === "object" && v != null) {
