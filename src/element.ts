@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { ComponentType } from "./Component";
 import { getLength } from "./utils/arrays";
 
@@ -42,7 +40,13 @@ type InputChildren<P> = P extends { children: (infer C)[] } ? C[]
   : Children[];
 
 const processChildren = <P>(children: InputChildren<P>) =>
-  (getLength(children) > 1 ? children : children[0]) as PropChildren<P>;
+  (getLength(children) > 1
+    ? children
+    : getLength(children) === 1
+    ? children[0]
+    : Object.keys(children).length === 0
+    ? undefined
+    : children) as PropChildren<P>;
 
 type CreateElement = {
   <P>(
@@ -71,7 +75,7 @@ export const createElement: CreateElement = <
   // deno-lint-ignore no-explicit-any
 ): VNode<any> => {
   const normalizedProps = {
-    ...(props as Omit<P, "children">),
+    ...(props ?? {}),
     children: processChildren(children) as PropChildren<P>,
   } as NodeProps<P>;
 

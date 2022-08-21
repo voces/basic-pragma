@@ -1,5 +1,5 @@
 import { setAdapter } from "./adapter";
-import { TEXT_ELEMENT } from "./common";
+import { TEXT_ELEMENT } from "./utils/common";
 import { createElement, Fragment } from "./element";
 import { ClassComponent, reconcile, render, test } from "./reconciler";
 import { buildFrame, buildInstance, buildNode } from "./test/util/builders";

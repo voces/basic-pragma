@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { hookContext, hookMap } from "./context";
 import { HookState } from "./types";
 import "./reconcilerHooks";

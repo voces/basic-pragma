@@ -1,0 +1,6 @@
+{
+  "name": "basic-pragma-test",
+  "dependencies": {
+    "basic-pragma": "^4.0.0"
+  }
+}

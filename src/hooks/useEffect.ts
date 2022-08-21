@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { hookContext, hookMap } from "./context";
 import { argsChanged, Inputs } from "./helpers";
 import { HookState } from "./types";

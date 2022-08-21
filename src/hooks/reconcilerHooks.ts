@@ -1,7 +1,5 @@
-/** @noSelfInFile **/
-
-import { ClassComponent, hooks } from "../reconciler";
-import { hookContext, hookMap } from "./context";
+import { ClassComponent } from "../reconciler";
+import { hookContext, hookMap, hooks } from "./context";
 
 const oldBeforeRender = hooks.beforeRender;
 const oldBeforeUnmount = hooks.beforeUnmount;

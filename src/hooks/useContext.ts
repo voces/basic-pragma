@@ -1,6 +1,4 @@
-/** @noSelfInFile **/
-
-import { Context } from "../createContext";
+import type { Context } from "../createContext";
 import { hookContext } from "./context";
 import "./reconcilerHooks";
 

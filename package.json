@@ -7,7 +7,7 @@
   "main": "./dist/index",
   "types": "./dist/index",
   "scripts": {
-    "build-lua": "rm -rf dist & tstl --project tsconfig.lua.json",
+    "build-lua": "rm -rf dist & tstl --project tsconfig.buildLua.json",
     "build": "rm -rf dist & tsc --project tsconfig.build.json",
     "dev": "tsc --project tsconfig.build.json --watch",
     "lint": "deno fmt . --ignore=package.json,package-lock.json",

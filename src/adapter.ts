@@ -1,7 +1,9 @@
-/** @noSelfInFile **/
-
 export type Adapter<T = unknown, P = unknown> = {
-  createFrame: (jsxType: string, parentFrame: T | undefined, props: P) => T;
+  createFrame: (
+    jsxType: keyof JSX.IntrinsicElements,
+    parentFrame: T | undefined,
+    props: P,
+  ) => T;
   cleanupFrame: (frame: T) => void;
   updateFrameProperties: (frame: T, prevProps: P, nextProps: P) => void;
   getParent: (frame: T) => T | undefined;

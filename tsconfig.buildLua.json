@@ -6,8 +6,7 @@
   },
   "exclude": ["node_modules", "**/*.test.ts", "src/test"],
   "tstl": {
-    "luaTarget": "universal",
-    "luaBundleEntry": "src/index.ts",
-    "luaBundle": "index.lua"
+    "buildMode": "library",
+    "noImplicitSelf": true
   }
 }

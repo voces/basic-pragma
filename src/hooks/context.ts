@@ -1,6 +1,4 @@
-/** @noSelfInFile **/
-
-import { ClassComponent } from "../reconciler";
+import type { ClassComponent } from "../reconciler";
 import { HookState } from "./types";
 
 interface HookContext {
@@ -16,3 +14,14 @@ export const hookMap = new WeakMap<
   // deno-lint-ignore no-explicit-any
   HookState<any, unknown>[]
 >();
+
+export const hooks = {
+  // deno-lint-ignore no-unused-vars
+  beforeRender: <T>(instance: ClassComponent<T>): void => {
+    /* do nothing */
+  },
+  // deno-lint-ignore no-unused-vars
+  beforeUnmount: <T>(instance: ClassComponent<T>): void => {
+    /* do nothing */
+  },
+};

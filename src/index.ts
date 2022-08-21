@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { VNode } from "./element";
 
 export { Adapter, setAdapter } from "./adapter";
@@ -7,6 +5,7 @@ export { Child, createElement, EmptyObject, Fragment, VNode } from "./element";
 export { flushUpdates, render } from "./reconciler";
 export { FunctionComponent as FunctionalComponent } from "./Component";
 export { createContext } from "./createContext";
+export { isLua } from "./utils/common";
 export { useReducer } from "./hooks/useReducer";
 export { useForceUpdate, useState } from "./hooks/useState";
 export { useEffect } from "./hooks/useEffect";
@@ -15,9 +14,8 @@ export { useContext } from "./hooks/useContext";
 
 declare global {
   namespace JSX {
-    interface IntrinsicElements {
-      __bp__placeholder: Record<string, never>;
-    }
+    // deno-lint-ignore no-empty-interface
+    interface IntrinsicElements {}
 
     interface ElementAttributesProperty {
       props: unknown;

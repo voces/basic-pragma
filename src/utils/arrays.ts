@@ -1,6 +1,4 @@
-/** @noSelfInFile **/
-
-import { isLua } from "../common";
+import { isLua } from "./common";
 
 /**
  * (Lua-safe) Gets or sets the length of the array. This is a number one higher

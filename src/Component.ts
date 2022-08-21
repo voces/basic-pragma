@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import type { Children, EmptyObject, NodeProps } from "./element";
 import type { ComponentClass, Contexts } from "./reconciler";
 

@@ -1,5 +1,3 @@
-/** @noSelfInFile **/
-
 import { FunctionComponent } from "./Component";
 import { Child, Children, EmptyObject, NodeProps } from "./element";
 import {

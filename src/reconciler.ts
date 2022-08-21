@@ -1,25 +1,13 @@
-/** @noSelfInFile **/
-
 import { Adapter, adapter } from "./adapter";
 import {
   ComponentType,
   FunctionComponent as FunctionalComponentType,
 } from "./Component";
 import { Children, NodeProps, VNode } from "./element";
-import { isLua, TEXT_ELEMENT } from "./common";
+import { isLua, TEXT_ELEMENT } from "./utils/common";
 import { Context } from "./createContext";
 import { getLength } from "./utils/arrays";
-
-export const hooks = {
-  // deno-lint-ignore no-unused-vars
-  beforeRender: <T>(instance: ClassComponent<T>): void => {
-    /* do nothing */
-  },
-  // deno-lint-ignore no-unused-vars
-  beforeUnmount: <T>(instance: ClassComponent<T>): void => {
-    /* do nothing */
-  },
-};
+import { hooks } from "./hooks/context";
 
 /**
  * A fleshed out vdom, with pointers to instantiated components or frames.
@@ -165,7 +153,11 @@ const isChild = (value: unknown): value is string | VNode<unknown> => {
 
   if (!isRecord(value)) return false;
 
-  if (typeof value.type !== "string" && typeof value.type !== "function") {
+  if (
+    typeof value.type !== "string" && typeof value.type !== "function" &&
+    // In Lua, classes are tables with prototypes
+    (isLua ? (!isRecord(value.type) || !isRecord(value.type.prototype)) : true)
+  ) {
     return false;
   }
 
@@ -247,7 +239,11 @@ function instantiate<T, P>(
 
   if (typeof type === "string") {
     // Instantiate host vnode
-    const frame = (adapter as Adapter<T>).createFrame(type, parentFrame, props);
+    const frame = (adapter as Adapter<T>).createFrame(
+      type as keyof JSX.IntrinsicElements,
+      parentFrame,
+      props,
+    );
     const childNodes = childrenAsNodes(vnode.props.children);
     const childInstances = childNodes.map((child) =>
       instantiate(child, frame, contexts)
