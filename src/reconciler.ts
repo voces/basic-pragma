@@ -163,11 +163,10 @@ const isChild = (value: unknown): value is string | VNode<unknown> => {
 
   if (!isRecord(value.props)) return false;
 
-  if ("children" in value.props) return true;
-
-  return false;
+  return true;
 };
 
+// NOTE: this will fail on an infinite loop!
 function* childIterator(children: unknown): Generator<VNode<unknown> | string> {
   if (!Array.isArray(children)) {
     if (isChild(children)) yield children;

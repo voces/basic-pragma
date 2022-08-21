@@ -37,10 +37,9 @@ setAdapter<Frame, { [key: string]: unknown; onClick: () => void }>({
       ...props,
       type: type as string,
     };
-    if (parent) {
-      if (!parent.children) parent.children = [];
-      parent.children.push(frame);
-    }
+    if (!parent) throw `Expected a parent for ${type}`;
+    if (!parent.children) parent.children = [];
+    parent.children.push(frame);
     return frame;
   },
   updateFrameProperties: (frame, _, { children: _children, ...nextProps }) => {

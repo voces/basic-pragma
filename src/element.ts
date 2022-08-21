@@ -3,7 +3,8 @@ import { getLength } from "./utils/arrays";
 
 export type EmptyObject = Record<string, never>;
 
-export type PropChildren<P> = P extends { children: (infer C)[] } ? C[]
+export type PropChildren<P> = P extends { children: (infer C)[] }
+  ? (C[] | C | undefined)
   : P extends { children: infer C } ? C
   : Children;
 
@@ -44,7 +45,7 @@ const processChildren = <P>(children: InputChildren<P>) =>
     ? children
     : getLength(children) === 1
     ? children[0]
-    : Object.keys(children).length === 0
+    : getLength(children) === 0
     ? undefined
     : children) as PropChildren<P>;
 

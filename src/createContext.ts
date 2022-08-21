@@ -62,7 +62,7 @@ export const createContext = <T>(defaultValue: T) => {
         this.subs.forEach((instance) => scheduleUpdate(instance));
       }
 
-      return children ?? null;
+      return children;
     }
   }
 
