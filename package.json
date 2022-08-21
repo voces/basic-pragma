@@ -1,6 +1,6 @@
 {
   "name": "basic-pragma",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "Configurable JSX pragma using a basic vdom",
   "author": "verit",
   "license": "MIT",
@@ -10,7 +10,7 @@
     "build-lua": "rm -rf dist & tstl --project tsconfig.buildLua.json",
     "build": "rm -rf dist & tsc --project tsconfig.build.json",
     "dev": "tsc --project tsconfig.build.json --watch",
-    "lint": "deno fmt . --ignore=package.json,package-lock.json",
+    "lint": "deno fmt . --ignore=package.json,package-lock.json,dist",
     "prepublishOnly": "npm run build",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
     "test-lint": "deno lint . --ignore=node_modules,dist",
@@ -30,8 +30,6 @@
     "ui"
   ],
   "devDependencies": {
-    "@babel/preset-env": "^7.18.10",
-    "@babel/preset-typescript": "^7.18.6",
     "@types/jest": "^26.0.14",
     "fengari": "^0.1.4",
     "jest": "^28.1.3",
@@ -40,8 +38,7 @@
     "typescript-to-lua": "^1.8.2"
   },
   "files": [
-    "dist/",
-    "src/"
+    "dist/"
   ],
   "repository": {
     "type": "git",

@@ -13,6 +13,6 @@
     "target": "ESNext",
     "types": ["@types/jest", "@types/node"]
   },
-  "include": ["src"],
+  "include": ["src", "scripts"],
   "exclude": ["node_modules", "src/test/luaIntegration"]
 }
