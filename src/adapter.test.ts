@@ -1,4 +1,4 @@
-import { adapter, setAdapter } from "./adapter";
+import { adapter, setAdapter, withAdapter } from "./adapter";
 
 describe("setAdapter", () => {
   describe("methods", () => {
@@ -67,5 +67,21 @@ describe("setAdapter", () => {
       "Adapter has not implemented createFrame",
     );
     expect(cleanupFrame).toHaveBeenCalled();
+  });
+});
+
+describe("withAdapter", () => {
+  it("temporarily sets adapter and then restores", () => {
+    const originalCreateFrame = jest.fn();
+    setAdapter({ createFrame: originalCreateFrame });
+    const newCreateFrame = jest.fn().mockImplementation((type) => type);
+
+    const ret = withAdapter(
+      { createFrame: newCreateFrame },
+      () => adapter.createFrame("foo", {}, {}),
+    );
+
+    expect(ret).toEqual("foo");
+    expect(adapter.createFrame).toEqual(originalCreateFrame);
   });
 });

@@ -1,6 +1,6 @@
 import { VNode } from "./element";
 
-export { Adapter, setAdapter } from "./adapter";
+export { Adapter, setAdapter, withAdapter } from "./adapter";
 export { Child, createElement, EmptyObject, Fragment, VNode } from "./element";
 export { flushUpdates, render } from "./reconciler";
 export { FunctionComponent as FunctionalComponent } from "./Component";
