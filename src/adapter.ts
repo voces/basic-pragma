@@ -43,3 +43,21 @@ export const setAdapter = <T, P>(adapter: Partial<Adapter<T, P>>): void => {
     baseUpdateFrameProperties;
   internalAdapter.scheduleUpdate = adapter.scheduleUpdate ?? baseScheduleUpdate;
 };
+
+export const withAdapter = <T, P, U>(
+  adapter: Partial<Adapter<T, P>>,
+  fn: () => U,
+): U => {
+  const oldAdapter = { ...internalAdapter };
+
+  setAdapter(adapter);
+
+  try {
+    const ret = fn();
+    setAdapter(oldAdapter);
+    return ret;
+  } catch (err) {
+    setAdapter(oldAdapter);
+    throw err;
+  }
+};
