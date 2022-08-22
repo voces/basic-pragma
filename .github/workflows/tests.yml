@@ -13,13 +13,11 @@ jobs:
         node-version: '18.x'
     - name: Install dependencies
       run: npm install
-    - name: Build Lua
-      run: npm run build-lua
+    - name: Build
+      run: npm run build
     - name: Run tests
       run: npm test
     - name: Use Deno
       uses: denoland/setup-deno@v1
     - name: Lint
       run: npm run test-lint
-    - name: Build TS
-      run: npm run build
