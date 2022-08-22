@@ -79,10 +79,6 @@ export const testAdapter: Adapter<TestFrame, Record<string, unknown>> = {
     }
   },
 
-  getParent: <P extends Record<string, unknown>>(
-    frame: TestFrame<P>,
-  ): TestFrame | undefined => frame.parent,
-
   scheduleUpdate: (): void => {
     if (waiting) return;
     waiting = true;

@@ -1,0 +1,12 @@
+{
+  "compilerOptions": {
+    "moduleResolution": "Node16",
+    "target": "ES2022",
+    "lib": ["DOM", "ES2022"],
+    "jsx": "react",
+    "esModuleInterop": true,
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "include": ["source.tsx"]
+}

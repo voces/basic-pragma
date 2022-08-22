@@ -45,9 +45,14 @@ it("lua integration test", async () => {
     type: "frame",
     val: (2 * 3 + 1) * 5 * 7,
     onClick: "[Function anonymous]",
+    // First update on state change; second on context change
     propHistory: [{
       type: "frame",
       val: 2 * 3 * 5 * 7,
+      onClick: "[Function anonymous]",
+    }, {
+      type: "frame",
+      val: (2 * 3 + 1) * 5 * 7,
       onClick: "[Function anonymous]",
     }],
   }]);

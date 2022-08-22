@@ -14,5 +14,9 @@
     "types": ["@types/jest", "@types/node"]
   },
   "include": ["src", "scripts"],
-  "exclude": ["node_modules", "src/test/luaIntegration"]
+  "exclude": [
+    "node_modules",
+    "src/test/luaIntegration",
+    "src/test/jsIntegration"
+  ]
 }

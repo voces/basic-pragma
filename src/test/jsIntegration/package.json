@@ -1,5 +1,6 @@
 {
-  "name": "basic-pragma-test-lua",
+  "name": "basic-pragma-test-js",
+  "type": "module",
   "dependencies": {
     "basic-pragma": "^4.0.0"
   }

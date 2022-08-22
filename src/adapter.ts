@@ -6,7 +6,6 @@ export type Adapter<T = unknown, P = unknown> = {
   ) => T;
   cleanupFrame: (frame: T) => void;
   updateFrameProperties: (frame: T, prevProps: P, nextProps: P) => void;
-  getParent: (frame: T) => T | undefined;
   scheduleUpdate: () => void;
 };
 
@@ -22,10 +21,6 @@ const baseUpdateFrameProperties: Adapter["updateFrameProperties"] = () => {
   throw "Adapter has not implemented updateFrameProperties";
 };
 
-const baseGetParent: Adapter["getParent"] = () => {
-  throw "Adapter has not implemented getParent";
-};
-
 const baseScheduleUpdate: Adapter["scheduleUpdate"] = () => {
   throw "Adapter has not implemented scheduleUdate";
 };
@@ -35,7 +30,6 @@ const internalAdapter: Adapter<any, any> = {
   createFrame: baseCreateFrame,
   cleanupFrame: baseCleanupFrame,
   updateFrameProperties: baseUpdateFrameProperties,
-  getParent: baseGetParent,
   scheduleUpdate: baseScheduleUpdate,
 };
 
@@ -45,7 +39,6 @@ export const setAdapter = <T, P>(adapter: Partial<Adapter<T, P>>): void => {
   // We do this just to ensure we set all methods on internalAdapter
   internalAdapter.createFrame = adapter.createFrame ?? baseCreateFrame;
   internalAdapter.cleanupFrame = adapter.cleanupFrame ?? baseCleanupFrame;
-  internalAdapter.getParent = adapter.getParent ?? baseGetParent;
   internalAdapter.updateFrameProperties = adapter.updateFrameProperties ??
     baseUpdateFrameProperties;
   internalAdapter.scheduleUpdate = adapter.scheduleUpdate ?? baseScheduleUpdate;

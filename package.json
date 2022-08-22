@@ -7,8 +7,9 @@
   "main": "./dist/index",
   "types": "./dist/index",
   "scripts": {
-    "build-lua": "rm -rf dist & tstl --project tsconfig.buildLua.json",
-    "build": "rm -rf dist & tsc --project tsconfig.build.json",
+    "build-lua": "tstl --project tsconfig.buildLua.json",
+    "build-js": "tsc --project tsconfig.build.json",
+    "build": "rm -rf dist & npm run build-js & npm run build-lua",
     "dev": "tsc --project tsconfig.build.json --watch",
     "lint": "deno fmt . --ignore=package.json,package-lock.json,dist",
     "prepublishOnly": "npm run build",
