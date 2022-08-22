@@ -37,18 +37,6 @@ describe("setAdapter", () => {
 
       expect(updateFrameProperties).toHaveBeenCalled();
     });
-
-    it("getParent", () => {
-      expect(() => adapter.getParent("foo")).toThrow(
-        "Adapter has not implemented getParent",
-      );
-
-      const getParent = jest.fn();
-      setAdapter({ getParent });
-      adapter.getParent({});
-
-      expect(getParent).toHaveBeenCalled();
-    });
   });
 
   it("clears other methods", () => {

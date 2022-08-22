@@ -392,8 +392,9 @@ function updateInstance<T>(internalInstance: Instance<T, unknown>) {
 }
 
 export const flushUpdates = (): void => {
-  for (const instance of scheduledUpdates.values()) updateInstance(instance);
+  const values = Array.from(scheduledUpdates.values());
   scheduledUpdates.clear();
+  for (const instance of values) updateInstance(instance);
 };
 
 export const test = { functionalComponentClasses };
