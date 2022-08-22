@@ -14,7 +14,7 @@
     "lint": "deno fmt . --ignore=package.json,package-lock.json,dist",
     "prepublishOnly": "npm run build",
     "test-debug": "node --inspect-brk node_modules/.bin/jest --runInBand",
-    "test-lint": "deno lint . --ignore=node_modules,dist",
+    "test-lint": "deno lint . --ignore=node_modules,dist,src/test/jsIntegration/dist",
     "test": "jest"
   },
   "keywords": [
