@@ -88,6 +88,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 
       // vnode for a compositional frame (class/functional component)
     } else if (component) {
+      instanceOfSameType.hostFrame = parentFrame;
       component.props = vnode.props;
       contexts = updateContexts(contexts, component);
 
