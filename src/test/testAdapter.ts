@@ -24,7 +24,7 @@ export class TestFrame<P = Record<string, unknown>> {
 
   constructor(props?: EmptyObject, parent?: TestFrame, jsxType?: string);
   constructor(props: P, parent?: TestFrame, jsxType?: string);
-  constructor(props?: P, parent?: TestFrame, jsxType?: string) {
+  constructor(props?: P, parent?: TestFrame, jsxType = "root") {
     this.props = { ...props };
     this.jsxType = jsxType;
 

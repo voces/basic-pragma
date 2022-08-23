@@ -5,9 +5,9 @@ import "./reconcilerHooks";
 export const useContext = <T>(
   Context: Context<T>,
 ): T => {
-  const context = hookContext.currentInstance.contexts[Context.id];
+  const context = hookContext.currentComponent.contexts[Context.id];
 
-  context?.sub(hookContext.currentInstance.instance);
+  context?.sub(hookContext.currentComponent.instance);
 
   return context?.props.value as T | undefined ??
     Context.defaultValue;

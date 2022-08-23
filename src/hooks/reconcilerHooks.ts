@@ -8,7 +8,7 @@ hooks.beforeRender = (instance) => {
   oldBeforeRender(instance);
 
   // TODO: somehow switch to a context/with pattern
-  hookContext.currentInstance = instance as ClassComponent<unknown>;
+  hookContext.currentComponent = instance as ClassComponent<unknown>;
   hookContext.currentIndex = 0;
 
   if (!hookMap.has(instance)) hookMap.set(instance, []);

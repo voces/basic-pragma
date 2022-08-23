@@ -8,7 +8,7 @@ export const useEffect = <I extends Inputs>(
   inputs?: I,
 ): void => {
   const index = hookContext.currentIndex++;
-  const hooks = hookMap.get(hookContext.currentInstance);
+  const hooks = hookMap.get(hookContext.currentComponent);
   if (!hooks) {
     throw `Could not located hook map. Are you using hooks outside of the render path?`;
   }
