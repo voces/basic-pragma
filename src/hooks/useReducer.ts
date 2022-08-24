@@ -1,22 +1,15 @@
-import { hookContext, hookMap } from "./context";
-import { HookState } from "./types";
+import { getOrInitHook, hookContext } from "./context";
+import { ReducerState } from "./types";
 import "./reconcilerHooks";
 
 export const useReducer = <S, A>(
   reducer: (prevState: S, action: A) => S,
   initialState: S,
 ): [S, (action: A) => void] => {
-  const index = hookContext.currentIndex++;
-  const hooks = hookMap.get(hookContext.currentComponent);
-  if (!hooks) {
-    throw `Could not located hook map. Are you using hooks outside of the render path?`;
-  }
-  const state = (hooks[index] ??
-    (hooks[index] = { type: "reducer" })) as HookState<S, A>;
-
-  if (state.type !== "reducer") {
-    throw `Expected a reducer hook at index ${index}, got ${state.type}`;
-  }
+  const state = getOrInitHook(
+    "reducer",
+    (): ReducerState<S, A> => ({ type: "reducer" }),
+  );
 
   state.reducer = reducer;
 
