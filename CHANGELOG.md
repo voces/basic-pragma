@@ -1,3 +1,7 @@
+## 4.4.0
+
+- feat: added `useMemo`
+
 ## 4.3.0
 
 - feat: added `useErrorBoundary`
