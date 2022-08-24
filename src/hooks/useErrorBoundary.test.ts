@@ -1,4 +1,4 @@
-import { setAdapter, withAdapter } from "../adapter";
+import { setAdapter } from "../adapter";
 import { createElement } from "../element";
 import { render } from "../reconciler";
 import { buildFrame } from "../test/builders";

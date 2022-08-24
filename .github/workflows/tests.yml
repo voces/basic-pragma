@@ -2,16 +2,23 @@ name: tests
 on:
 - push
 - workflow_dispatch
+defaults:
+  runs-on: ubuntu-latest
 jobs:
-  build:
-    runs-on: ubuntu-latest
+  setup:
     steps:
     - uses: actions/checkout@v3
+  test:
+    needs: setup
+    steps:
     - uses: actions/setup-node@v3
       with:
         node-version: '18.x'
     - run: npm install
     - run: npm run build
     - run: npm test
+  lint:
+    needs: setup
+    steps:
     - uses: denoland/setup-deno@v1
     - run: npm run test-lint
