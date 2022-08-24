@@ -14,4 +14,4 @@ jobs:
     - run: npm run build
     - run: npm test
     - uses: denoland/setup-deno@v1
-    - run: deno lint . --ignore=node_modules,dist,src/test/jsIntegration/dist
+    - run: npm run test-lint
