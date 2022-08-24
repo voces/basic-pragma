@@ -18,7 +18,14 @@ export interface RefState<T> {
   current: T;
 }
 
+export interface MemoState<T, U> {
+  type: "memo";
+  current: T;
+  args: U;
+}
+
 export type HookState<S, A = unknown> =
   | ReducerState<S, A>
   | EffectHookState<S>
-  | RefState<S>;
+  | RefState<S>
+  | MemoState<S, A>;
