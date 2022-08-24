@@ -47,74 +47,76 @@ export function reconcile<T, VNodeProps, instanceProps>(
   vnode: VNode<VNodeProps> | null,
   contexts: Contexts = instance?.component?.contexts ?? {},
 ): Instance<T, VNodeProps> | null {
-  try {
-    if (!instance) {
-      // vnode is null if we're deleting something; we can't delete
-      // something if there's no instance
-      if (!vnode) return null;
+  if (!instance) {
+    // vnode is null if we're deleting something; we can't delete
+    // something if there's no instance
+    if (!vnode) return null;
 
-      // Create instance
-      return instantiate(vnode, parentFrame, contexts);
-    } else if (!vnode) {
-      // Remove instance
-      cleanupFrames(instance);
-      return null;
-    } else if (instance.vnode.type !== vnode.type) {
-      // Replace instance
-      const newInstance = instantiate(vnode, parentFrame, contexts);
-      cleanupFrames(instance);
-      return newInstance;
-    } else {
-      // This assumes .type equality => Prop type equality
-      const instanceOfSameType = instance as Instance<T, unknown> as Instance<
-        T,
-        VNodeProps
-      >;
-      const component = instanceOfSameType.component;
+    // Create instance
+    return instantiate(vnode, parentFrame, contexts);
+  } else if (!vnode) {
+    // Remove instance
+    cleanupFrames(instance);
+    return null;
+  } else if (instance.vnode.type !== vnode.type) {
+    // Replace instance
+    const newInstance = instantiate(vnode, parentFrame, contexts);
+    cleanupFrames(instance);
+    return newInstance;
+  } else {
+    // This assumes .type equality => Prop type equality
+    const instanceOfSameType = instance as Instance<T, unknown> as Instance<
+      T,
+      VNodeProps
+    >;
+    const component = instanceOfSameType.component;
 
-      // vnode for a host frame
-      if (typeof vnode.type === "string") {
-        // Update host vnode
-        adapter.updateFrameProperties(
-          instance.hostFrame,
-          instance.vnode.props,
-          vnode.props,
-        );
+    // vnode for a host frame
+    if (typeof vnode.type === "string") {
+      // Update host vnode
+      adapter.updateFrameProperties(
+        instance.hostFrame,
+        instance.vnode.props,
+        vnode.props,
+      );
 
-        instanceOfSameType.childInstances = reconcileChildren(
-          instanceOfSameType,
-          contexts,
-          vnode.props.children,
-        );
+      instanceOfSameType.childInstances = reconcileChildren(
+        instanceOfSameType,
+        contexts,
+        vnode.props.children,
+      );
 
-        // vnode for a compositional frame (class/functional component)
-      } else if (component) {
-        component.props = vnode.props;
-        contexts = updateContexts(contexts, component);
+      // vnode for a compositional frame (class/functional component)
+    } else if (component) {
+      if (parentFrame) instanceOfSameType.hostFrame = parentFrame;
+      component.props = vnode.props;
+      contexts = updateContexts(contexts, component);
 
-        try {
-          hooks.beforeRender(component);
-        } catch (err) {
-          console.error(err);
-          cleanupFrames(instance);
-          throw err;
-        }
+      try {
+        hooks.beforeRender(component);
+      } catch (err) {
+        console.error(err);
+        cleanupFrames(instance);
+        throw err;
+      }
 
-        const children = component.render(vnode.props, contexts);
+      const children = component.render(vnode.props, contexts);
 
+      try {
         instanceOfSameType.childInstances = reconcileChildren(
           instanceOfSameType,
           contexts,
           children,
         );
+      } catch (err) {
+        if (component.componentDidCatch) {
+          component.componentDidCatch(err);
+        } else throw err;
       }
-
-      instanceOfSameType.vnode = vnode;
-      return instanceOfSameType;
     }
-  } catch (err) {
-    console.error(err);
-    return null;
+
+    instanceOfSameType.vnode = vnode;
+    return instanceOfSameType;
   }
 }
 
@@ -254,7 +256,11 @@ function instantiate<T, P>(
     };
   } else {
     // Instantiate component vnode
-    const instance = { vnode } as Instance<T, P>;
+    const instance: Instance<T, P> = {
+      vnode,
+      hostFrame: parentFrame,
+      childInstances: [],
+    };
     instance.component = createComponent(vnode, instance, contexts);
     contexts = updateContexts(contexts, instance.component);
 
@@ -267,9 +273,14 @@ function instantiate<T, P>(
     const children = childrenAsNodes(
       instance.component.render(props, contexts),
     );
-
-    instance.childInstances = children
-      .map((child) => instantiate(child, parentFrame, contexts));
+    try {
+      instance.childInstances = children
+        .map((child) => instantiate(child, parentFrame, contexts));
+    } catch (err) {
+      if (instance.component.componentDidCatch) {
+        instance.component.componentDidCatch(err);
+      } else throw err;
+    }
 
     return instance;
   }
@@ -353,10 +364,10 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
 
   state = {} as S;
   contexts: Contexts = {};
+  declare componentWillUnmount?: () => void;
+  declare componentDidCatch?: (error: unknown) => void;
 
   constructor(public props: NodeProps<P>) {}
-
-  componentWillUnmount() {}
 
   setState(partialState: Partial<S>): void {
     this.state = { ...this.state, ...partialState };

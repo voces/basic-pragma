@@ -51,7 +51,7 @@ export const createContext = <T>(defaultValue: T) => {
         component.componentWillUnmount = () => {
           this.subs.delete(instance);
           component.componentWillUnmount = oldComponentWillUnmount;
-          oldComponentWillUnmount();
+          oldComponentWillUnmount?.();
         };
       }
     }

@@ -2,7 +2,7 @@ import type { ClassComponent } from "../reconciler";
 import { HookState } from "./types";
 
 interface HookContext {
-  currentInstance: ClassComponent<unknown>;
+  currentComponent: ClassComponent<unknown>;
   currentIndex: number;
 }
 
