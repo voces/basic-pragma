@@ -139,9 +139,12 @@ describe("reconcile", () => {
       );
 
       expect(instance).toEqual(
-        buildInstance({
-          children: [buildNode({ a: true }), buildNode({ b: true })],
-        }, Fragment),
+        {
+          ...buildInstance({
+            children: [buildNode({ a: true }), buildNode({ b: true })],
+          }, Fragment),
+          hostFrame: root,
+        },
       );
     });
 
@@ -149,8 +152,9 @@ describe("reconcile", () => {
       const MyFunctionComponent = (props: { foo: string }) =>
         createElement("frame", props);
 
+      const root = new TestFrame();
       const instance = reconcile(
-        new TestFrame(),
+        root,
         null,
         createElement(MyFunctionComponent, { foo: "bar" }),
       );
@@ -158,6 +162,7 @@ describe("reconcile", () => {
       expect(instance).toEqual({
         ...buildInstance({ foo: "bar" }, MyFunctionComponent),
         childInstances: [buildInstance({ foo: "bar" })],
+        hostFrame: root,
       });
     });
 
@@ -168,8 +173,9 @@ describe("reconcile", () => {
         }
       }
 
+      const root = new TestFrame();
       const instance = reconcile(
-        new TestFrame(),
+        root,
         null,
         createElement(MyClassComponent, { foo: "bar" }),
       );
@@ -177,6 +183,7 @@ describe("reconcile", () => {
       expect(instance).toEqual({
         ...buildInstance({ foo: "bar" }, MyClassComponent),
         childInstances: [buildInstance({ foo: "bar" })],
+        hostFrame: root,
       });
     });
   });
@@ -339,6 +346,7 @@ describe("reconcile", () => {
       expect(instance).toEqual({
         ...buildInstance({ bar: "bar-1", foo: "foo-1" }, MyFunctionComponent),
         childInstances: [buildInstance({ bar: "bar-1", foo: "foo-1" })],
+        hostFrame: root,
       });
 
       const newInstance = reconcile(
