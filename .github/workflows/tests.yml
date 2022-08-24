@@ -4,12 +4,10 @@ on:
 - workflow_dispatch
 jobs:
   setup:
-    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
   test:
     needs: setup
-    runs-on: ubuntu-latest
     steps:
     - uses: actions/setup-node@v3
       with:
@@ -19,7 +17,6 @@ jobs:
     - run: npm test
   lint:
     needs: setup
-    runs-on: ubuntu-latest
     steps:
     - uses: denoland/setup-deno@v1
-    - run: npm run test-lint
+    - run: deno lint . --ignore=node_modules,dist,src/test/jsIntegration/dist
