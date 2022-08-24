@@ -3,7 +3,7 @@ import type { ClassComponent } from "../reconciler";
 export interface ReducerState<S, A> {
   type: "reducer";
   reducer?: (this: void, prevState: S, action: A) => S;
-  instance?: ClassComponent<unknown>;
+  component?: ClassComponent<unknown>;
   value?: [S, (action: A) => void];
 }
 
@@ -21,7 +21,7 @@ export interface RefState<T> {
 export interface MemoState<T, U> {
   type: "memo";
   current: T;
-  args: U;
+  inputs: U;
 }
 
 export type HookState<S, A = unknown> =

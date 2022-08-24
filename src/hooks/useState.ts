@@ -1,3 +1,5 @@
+import { scheduleUpdate } from "../reconciler";
+import { hookContext } from "./context";
 import { useReducer } from "./useReducer";
 
 export const useState = <S>(
@@ -14,9 +16,7 @@ export const useState = <S>(
   );
 
 export const useForceUpdate = (): () => void => {
-  const [, setTick] = useState(0);
-  const update = () => {
-    setTick((tick: number) => tick + 1);
-  };
+  const instance = hookContext.currentComponent.instance;
+  const update = () => scheduleUpdate(instance);
   return update;
 };

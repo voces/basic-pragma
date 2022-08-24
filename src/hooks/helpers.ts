@@ -1,5 +1,5 @@
 export type Inputs = ReadonlyArray<unknown>;
 
-export const argsChanged = (oldArgs: Inputs, newArgs: Inputs): boolean =>
-  oldArgs.length !== newArgs.length ||
-  newArgs.some((arg, index) => arg !== oldArgs[index]);
+export const inputsChanged = (oldInputs: Inputs, newInputs: Inputs): boolean =>
+  oldInputs.length !== newInputs.length ||
+  newInputs.some((input, index) => input !== oldInputs[index]);

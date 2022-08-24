@@ -37,7 +37,7 @@ it("invokes effect only once", () => {
   expect(fn).toHaveBeenCalledTimes(1);
 });
 
-it("invokes effect if args change", () => {
+it("invokes effect if inputs change", () => {
   const fn = jest.fn();
   let inc!: () => void;
   const TestComponent = () => {
