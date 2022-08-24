@@ -1,8 +1,12 @@
 import { getOrInitHook } from "./context";
-import { argsChanged, Inputs } from "./helpers";
+import { Inputs, inputsChanged } from "./helpers";
 import { EffectHookState } from "./types";
 import "./reconcilerHooks";
 
+/**
+ * Accepts a function that contains imperative, possibly effectful code.
+ * Unlike React, the effects run synchronously if the inputs have changed.
+ */
 export const useEffect = <I extends Inputs>(
   callback: () => void | (() => void),
   inputs?: I,
@@ -15,7 +19,7 @@ export const useEffect = <I extends Inputs>(
 
   if (
     isNew ||
-    (state.lastInputs && inputs && argsChanged(state.lastInputs, inputs))
+    (state.lastInputs && inputs && inputsChanged(state.lastInputs, inputs))
   ) {
     if (state.cleanup) state.cleanup();
     state.lastInputs = inputs;

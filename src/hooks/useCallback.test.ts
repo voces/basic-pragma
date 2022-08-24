@@ -1,7 +1,6 @@
 import { setAdapter } from "../adapter";
 import { createElement } from "../element";
 import { render } from "../reconciler";
-import { buildFrame } from "../test/builders";
 import { testAdapter, TestFrame } from "../test/testAdapter";
 import { useCallback } from "./useCallback";
 import { useForceUpdate, useState } from "./useState";
@@ -11,7 +10,6 @@ setAdapter(testAdapter);
 it("works", () => {
   let forceUpdate!: () => void;
   let setStateFn!: (value: number) => void;
-  let value = 0;
   const TestComponent = () => {
     const [state, setState] = useState(1);
     forceUpdate = useForceUpdate();

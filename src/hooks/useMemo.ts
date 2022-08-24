@@ -1,13 +1,14 @@
 import { getOrInitHook } from "./context";
-import { argsChanged } from "./helpers";
+import { inputsChanged } from "./helpers";
+import { MemoState } from "./types";
 
-export const useMemo = <T, K extends unknown[]>(fn: () => T, args: K): T => {
+export const useMemo = <T, K extends unknown[]>(fn: () => T, inputs: K): T => {
   const state = getOrInitHook(
     "memo",
-    () => ({ type: "memo", current: fn(), args }),
+    (): MemoState<T, K> => ({ type: "memo", current: fn(), inputs: inputs }),
   );
 
-  if (argsChanged(state.args, args)) state.current = fn();
+  if (inputsChanged(state.inputs, inputs)) state.current = fn();
 
   return state.current;
 };

@@ -1,6 +1,7 @@
 import { getOrInitHook, hookContext } from "./context";
 import { ReducerState } from "./types";
 import "./reconcilerHooks";
+import { scheduleUpdate } from "../reconciler";
 
 export const useReducer = <S, A>(
   reducer: (prevState: S, action: A) => S,
@@ -13,19 +14,19 @@ export const useReducer = <S, A>(
 
   state.reducer = reducer;
 
-  if (!state.instance) {
+  if (!state.component) {
     state.value = [
       initialState,
       (action: A) => {
         const nextValue = state.reducer!(state.value![0], action);
         if (state.value![0] !== nextValue) {
           state.value = [nextValue, state.value![1]];
-          state.instance!.setState({});
+          scheduleUpdate(state.component!.instance);
         }
       },
     ];
 
-    state.instance = hookContext.currentComponent;
+    state.component = hookContext.currentComponent;
   }
 
   return state.value!;
