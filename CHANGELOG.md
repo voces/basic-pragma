@@ -1,6 +1,7 @@
 ## 4.4.0
 
 - feat: added `useMemo`
+- feat: added `useCallback`
 
 ## 4.3.0
 
