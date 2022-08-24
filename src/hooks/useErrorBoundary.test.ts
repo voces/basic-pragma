@@ -28,7 +28,6 @@ const TestComponent = (
 
   if (error) return createElement("frame", { error });
   if (!cleared) return createElement(ThrowChild, null);
-  // if (!cleared) throw new Error("foobar!");
   return createElement("frame", { cleared });
 };
 

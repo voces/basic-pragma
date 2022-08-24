@@ -88,7 +88,7 @@ export function reconcile<T, VNodeProps, instanceProps>(
 
       // vnode for a compositional frame (class/functional component)
     } else if (component) {
-      instanceOfSameType.hostFrame = parentFrame;
+      if (parentFrame) instanceOfSameType.hostFrame = parentFrame;
       component.props = vnode.props;
       contexts = updateContexts(contexts, component);
 
@@ -364,8 +364,8 @@ export abstract class ClassComponent<P, S = unknown, T = unknown> {
 
   state = {} as S;
   contexts: Contexts = {};
-  componentWillUnmount?: () => void;
-  componentDidCatch?: (error: unknown) => void;
+  declare componentWillUnmount?: () => void;
+  declare componentDidCatch?: (error: unknown) => void;
 
   constructor(public props: NodeProps<P>) {}
 
