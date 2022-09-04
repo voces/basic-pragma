@@ -129,7 +129,9 @@ function cleanupFrames<T, P>(instance: Instance<T, P>) {
     }
   }
 
-  if (instance.hostFrame) adapter.cleanupFrame(instance.hostFrame);
+  if (instance.hostFrame && !instance.component) {
+    adapter.cleanupFrame(instance.hostFrame);
+  }
 }
 
 const updateContexts = (
@@ -318,9 +320,6 @@ function createComponent<T, S, P>(
       // Wrap the dynamic class in an object to avoid all functional
       // components being ClassComponent
       constructor = class extends ClassComponent<P, S, T> {
-        // get displayName() {
-        //   return renderFunc.name;
-        // }
         render(props: NodeProps<P>, contexts: Contexts) {
           return renderFunc(props, contexts);
         }

@@ -219,6 +219,22 @@ describe("reconcile", () => {
 
       expect(root).toEqual(expect.objectContaining({ children: [] }));
     });
+
+    it.only("removing a component does not touch the parent", () => {
+      const root = new TestFrame();
+      const MyComponent = () => null;
+      const instance = reconcile(
+        root,
+        null,
+        createElement("frame", null, createElement(MyComponent, null)),
+      );
+
+      expect(root.children).toHaveLength(1);
+
+      reconcile(root, instance, createElement("frame", null));
+
+      expect(root.children).toHaveLength(1);
+    });
   });
 
   it("replacing an instance", () => {
