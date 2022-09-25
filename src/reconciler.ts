@@ -26,7 +26,7 @@ const containerMap = new WeakMap<any, Instance<any, any>>();
 export function render<T, P>(vnode: VNode<P>, container: T): void {
   const prevInstance = containerMap.get(container) ?? null;
   const nextInstance = reconcile(container, prevInstance, vnode);
-  containerMap.set(containerMap, nextInstance);
+  containerMap.set(container, nextInstance);
 }
 
 export function reconcile<T, InstanceProps>(
