@@ -220,7 +220,7 @@ describe("reconcile", () => {
       expect(root).toEqual(expect.objectContaining({ children: [] }));
     });
 
-    it.only("removing a component does not touch the parent", () => {
+    it("removing a component does not touch the parent", () => {
       const root = new TestFrame();
       const MyComponent = () => null;
       const instance = reconcile(
@@ -432,5 +432,19 @@ describe("render", () => {
       buildFrame({ nodeValue: "bar" }, TEXT_ELEMENT),
       buildFrame({ me: "too" }),
     ]);
+  });
+
+  it("does not create a host on second render", () => {
+    const root = new TestFrame();
+    render(createElement("frame", { foo: "bar" }), root);
+    const child = root.children[0];
+
+    expect(child).toEqual(buildFrame({ foo: "bar" }));
+
+    render(createElement("frame", { foo: "baz" }), root);
+
+    expect(root.children.length).toEqual(1);
+    expect(root.children[0]).toBe(child);
+    expect(child).toEqual(buildFrame({ foo: "baz" }));
   });
 });
