@@ -1,6 +1,6 @@
 {
   "name": "basic-pragma",
-  "version": "4.4.2",
+  "version": "4.4.3",
   "description": "Configurable JSX pragma using a basic vdom",
   "author": "verit",
   "license": "MIT",

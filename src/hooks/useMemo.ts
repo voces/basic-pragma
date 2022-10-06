@@ -1,6 +1,7 @@
 import { getOrInitHook } from "./context";
 import { inputsChanged } from "./helpers";
 import { MemoState } from "./types";
+import "./reconcilerHooks";
 
 export const useMemo = <T, K extends unknown[]>(fn: () => T, inputs: K): T => {
   const state = getOrInitHook(

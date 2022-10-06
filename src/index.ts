@@ -13,8 +13,11 @@ export { flushUpdates, render } from "./reconciler";
 export { FunctionComponent as FunctionalComponent } from "./Component";
 export { createContext } from "./createContext";
 export { isLua } from "./utils/common";
+
+export { useCallback } from "./hooks/useCallback";
 export { useContext } from "./hooks/useContext";
 export { useEffect } from "./hooks/useEffect";
+export { useErrorBoundary } from "./hooks/useErrorBoundary";
 export { useForceUpdate, useState } from "./hooks/useState";
 export { useMemo } from "./hooks/useMemo";
 export { useReducer } from "./hooks/useReducer";
