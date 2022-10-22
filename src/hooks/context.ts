@@ -34,11 +34,11 @@ export const getOrInitHook = <T extends HookState<any, any>>(
 
 export const hooks = {
   // deno-lint-ignore no-unused-vars
-  beforeRender: <T>(instance: ClassComponent<T>): void => {
+  beforeRender: <T>(component: ClassComponent<T>): void => {
     /* do nothing */
   },
   // deno-lint-ignore no-unused-vars
-  beforeUnmount: <T>(instance: ClassComponent<T>): void => {
+  beforeUnmount: <T>(component: ClassComponent<T>): void => {
     /* do nothing */
   },
 };

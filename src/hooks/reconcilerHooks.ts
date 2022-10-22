@@ -4,20 +4,20 @@ import { hookContext, hookMap, hooks } from "./context";
 const oldBeforeRender = hooks.beforeRender;
 const oldBeforeUnmount = hooks.beforeUnmount;
 
-hooks.beforeRender = (instance) => {
-  oldBeforeRender(instance);
+hooks.beforeRender = (component) => {
+  oldBeforeRender(component);
 
   // TODO: somehow switch to a context/with pattern
-  hookContext.currentComponent = instance as ClassComponent<unknown>;
+  hookContext.currentComponent = component as ClassComponent<unknown>;
   hookContext.currentIndex = 0;
 
-  if (!hookMap.has(instance)) hookMap.set(instance, []);
+  if (!hookMap.has(component)) hookMap.set(component, []);
 };
 
-hooks.beforeUnmount = (instance) => {
-  oldBeforeUnmount(instance);
+hooks.beforeUnmount = (component) => {
+  oldBeforeUnmount(component);
 
-  const hooks = hookMap.get(instance);
+  const hooks = hookMap.get(component);
 
   if (hooks) {
     hooks.forEach(
