@@ -1,7 +1,14 @@
 import { setAdapter } from "./adapter";
 import { TEXT_ELEMENT } from "./utils/common";
 import { createElement, Fragment } from "./element";
-import { ClassComponent, reconcile, render, test } from "./reconciler";
+import {
+  ClassComponent,
+  flushUpdates,
+  reconcile,
+  render,
+  scheduleUpdate,
+  test,
+} from "./reconciler";
 import { buildFrame, buildInstance, buildNode } from "./test/builders";
 import { testAdapter, TestFrame } from "./test/testAdapter";
 
@@ -234,6 +241,34 @@ describe("reconcile", () => {
       reconcile(root, instance, createElement("frame", null));
 
       expect(root.children).toHaveLength(1);
+    });
+
+    it("removing an instance clears its pending updates", () => {
+      const root = new TestFrame();
+      let renders = 0;
+      const MyComponent = () => (renders++, null);
+      const instance = reconcile(root, null, createElement(MyComponent, null));
+      scheduleUpdate(instance);
+      reconcile(root, instance, null);
+      flushUpdates();
+
+      expect(renders).toBe(1);
+    });
+
+    it("removing an instance clears flushing updates", () => {
+      const root = new TestFrame();
+      let renders = 0;
+      let childRenders = 0;
+      const ChildComponent = () => (childRenders++, null);
+      const MyComponent = () =>
+        renders++ === 0 ? createElement(ChildComponent, null) : null;
+      const instance = reconcile(root, null, createElement(MyComponent, null));
+      scheduleUpdate(instance);
+      scheduleUpdate(instance.childInstances[0]);
+      flushUpdates();
+
+      expect(renders).toBe(2);
+      expect(childRenders).toBe(1);
     });
   });
 

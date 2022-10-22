@@ -132,6 +132,9 @@ function cleanupFrames<T, P>(instance: Instance<T, P>) {
   if (instance.hostFrame && !instance.component) {
     adapter.cleanupFrame(instance.hostFrame);
   }
+
+  scheduledUpdates.delete(instance as Instance<T, unknown>);
+  flushingScheduledUpdates.delete(instance as Instance<T, unknown>);
 }
 
 const updateContexts = (
@@ -401,10 +404,13 @@ function updateInstance<T>(internalInstance: Instance<T, unknown>) {
   reconcile(null, internalInstance, vnode);
 }
 
+let flushingScheduledUpdates: Set<Instance<unknown, unknown>> = new Set();
 export const flushUpdates = (): void => {
-  const values = Array.from(scheduledUpdates.values());
+  flushingScheduledUpdates = new Set(scheduledUpdates.values());
   scheduledUpdates.clear();
-  for (const instance of values) updateInstance(instance);
+  for (const instance of flushingScheduledUpdates) {
+    if (flushingScheduledUpdates.has(instance)) updateInstance(instance);
+  }
 };
 
 export const test = { functionalComponentClasses };
